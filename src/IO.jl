@@ -2,7 +2,7 @@
     read_fasta(fastafile::AbstractString; alphabet = :auto, kwargs...)
     read_fasta(
         fastafile::AbstractString, alphabet;
-        compute_weights = false, theta = 0.2, verbose = false,
+        weights = false, theta = 0.2, verbose = false,
     )
 """
 function read_fasta(fastafile::AbstractString; alphabet = :auto, kwargs...)
@@ -62,8 +62,20 @@ function auto_alphabet_from_sequences(sequences::AbstractVector{<:AbstractString
     end
 end
 
-
-
+function Base.write(file::AbstractString, X::Alignment)
+    return open(file, "w") do io
+        write(io, X)
+    end
+end
+function Base.write(io::IO, X::Alignment)
+    return FASTAWriter(io) do fw
+        for (i, seq) in enumerate(X)
+            header = isempty(X.names[i]) ? "$i" : X.names[i]
+            rec = FASTARecord(header, X.alphabet(seq))
+            write(fw, rec)
+        end
+    end
+end
 
 
 

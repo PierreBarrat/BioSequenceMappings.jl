@@ -10,3 +10,4 @@ basedir = dirname(@__FILE__)
         [Alphabet(:dna), Alphabet(:aa), Alphabet(:binary)]
     )
 end
+

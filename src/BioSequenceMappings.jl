@@ -25,4 +25,7 @@ export compute_weights
 include("IO.jl")
 export read_fasta
 
+include("misc.jl")
+export hamming
+
 end

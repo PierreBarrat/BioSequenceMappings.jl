@@ -150,7 +150,7 @@ function Base.show(io::IO, X::Alignment)
 end
 function Base.show(io::IO, x::MIME"text/plain", X::Alignment)
     L, M = size(X)
-    println(io, "Alignment of $M sequences of length $L- Shown as `MxL` matrix")
+    println(io, "Alignment of M=$M sequences of length L=$L - Shown as `MxL` matrix")
     show(io, x, X.data')
 end
 
