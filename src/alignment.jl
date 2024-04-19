@@ -229,6 +229,19 @@ function Base.iterate(X::AbstractAlignment, state)
     return iterate(eachslice(X.data, dims=ndims(X.data)), state)
 end
 
+function eachsequence(X::AbstractAlignment, indices)
+    return Iterators.map(i -> selectdim(X.data, ndims(X.data), i), indices)
+end
+function eachsequence(X::AbstractAlignment; skip::Integer = 1)
+    @assert skip > 0 "`skip` kwarg must be positive - instead $skip"
+    return if skip == 1
+        eachslice(X.data, dims=ndims(X.data))
+    else
+        eachsequence(X, 1:skip:size(X.data)[end])
+    end
+end
+
+
 # Different for OneHot and normal alignment
 Base.eltype(X::Alignment{T}) where T = AbstractVector{T}
 
@@ -245,12 +258,30 @@ Base.lastindex(X::AbstractAlignment) = length(X)
 Base.view(X::AbstractAlignment, i) = getindex(X, i)
 Base.keys(X::AbstractAlignment) = LinearIndices(1:length(X))
 
+"""
+    subsample(X::AbstractAlignment, indices)
+
+Return an `Alignment` containing only the sequences of `X` at `indices`.
+"""
 subsample(X::AbstractAlignment, i::Int) = subsample(X, i:i)
-function subsample(X::A, indices) where A <: AbstractAlignment
+function subsample(X::AbstractAlignment, indices)
     data_copy = copy(X[indices])
     Y = copy(X)
     Y.data = data_copy
     return Y
+end
+
+"""
+    subsample_random(X::AbstractAlignment, m::Int)
+
+Return an `Alignment` with `m` sequences taking randomly from `X`.
+Sampling is done without replacement, meaning the `m` sequences are all at different
+positions in `X`.
+"""
+function subsample_random(X::AbstractAlignment, m::Int)
+    M = length(X)
+    @assert m < M "Cannot take $m different sequences from alignment of size $M"
+    return subsample(X, randperm(M)[1:m])
 end
 
 ################################################

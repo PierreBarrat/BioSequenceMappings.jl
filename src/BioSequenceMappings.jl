@@ -17,7 +17,7 @@ export default_alphabet
 
 include("alignment.jl")
 export Alignment
-export sequence_length, sequence_number, subsample
+export eachsequence, sequence_length, sequence_number, subsample, subsample_random
 
 include("weights.jl")
 export compute_weights
@@ -26,6 +26,6 @@ include("IO.jl")
 export read_fasta
 
 include("misc.jl")
-export hamming
+export hamming, pairwise_hamming
 
 end

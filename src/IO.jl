@@ -79,39 +79,3 @@ end
 
 
 
-# """
-#     Base.write(file::AbstractString, S::DCASample; map=true)
-
-# Write `S` to `file`. If `map=false`, use a numerical format.
-# """
-# function Base.write(file::AbstractString, S::DCASample; map=true, kwargs...)
-#     if map
-#         _write_fasta(file, S)
-#     else
-#         _write_num(file, S; kwargs...)
-#     end
-# end
-# function _write_fasta(file::AbstractString, S::DCASample)
-#     try
-#         FASTAWriter(open(file, "w")) do io
-#             for (i,s) in enumerate(S)
-#                 header = isempty(S.names[i]) ? "$i" : S.names[i]
-#                 rec = FASTARecord(header, DCATools.num_to_aa(s; mapping = S.mapping))
-#                 write(io, rec)
-#             end
-#         end
-#     catch err
-#         @warn "There was a problem when writing sequences to files;
-#         this could be due to an inadapted mapping, got $(S.mapping)."
-#         error(err)
-#     end
-# end
-# function _write_num(file::AbstractString, S::DCASample; header=false)
-#     open(file, "w") do io
-#         if header
-#             L = lenseq(S)
-#             write(io, "$L $(S.q)")
-#         end
-#         writedlm(io, S.dat', ' ')
-#     end
-# end
