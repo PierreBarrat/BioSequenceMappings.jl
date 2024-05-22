@@ -239,6 +239,9 @@ function name(A::Alphabet)
     end
 end
 
+Base.getindex(alphabet::Alphabet, i::Integer) = alphabet.index_to_char[i]
+Base.getindex(alphabet::Alphabet, c::Char) = alphabet.char_to_index[c]
+
 function Base.show(io::IO, A::Alphabet{T}) where T
     print(io, "Alphabet{$T}: \"$(A.string)\"")
 end

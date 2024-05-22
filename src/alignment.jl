@@ -120,6 +120,10 @@ function Alignment(data::AbstractVector{<:AbstractVector{T}}, alphabet; kwargs..
     return Alignment(reduce(hcat, data), alphabet; kwargs...)
 end
 
+function Alignment(data::AbstractVector{T}, alphabet::Alphabet{T}; kwargs...) where T
+    return Alignment(reshape(data, length(data), 1), alphabet; kwargs...)
+end
+
 """
     Alignment(data::AbstractMatrix{T}; alphabet = :auto, kwargs...)
 

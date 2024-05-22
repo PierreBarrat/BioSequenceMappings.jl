@@ -58,7 +58,9 @@ function auto_alphabet_from_sequences(sequences::AbstractVector{<:AbstractString
     elseif all(in(_DEFAULT_BINARY_ALPHABET_STRING), characters)
         Alphabet(:binary)
     else
-        Alphabet(prod(characters))
+        alphabet = Alphabet(prod(characters))
+        @warn "Could not find a default alphabet\n Using $alphabet"
+        alphabet
     end
 end
 
