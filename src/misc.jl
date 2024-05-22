@@ -13,6 +13,14 @@ function hamming(X::Alignment, i::Integer, Y::Alignment, j::Integer)
     return nothing
 end
 
+
+"""
+    pairwise_hamming(X, Y; step=1, step_left, step_right)
+
+Return matrix of all hamming distances between sequences of `X` and `Y`.
+Only consider sequences every `step`.
+`step_left` and `step_right` can be used to skip sequence either in `X` or in `Y`:
+"""
 function pairwise_hamming(
     X::Alignment, Y::Alignment; step=1, step_left=step, step_right=step, normalize=true,
 )
@@ -27,6 +35,13 @@ function pairwise_hamming(
     return [hamming(x, y; normalize) for x in X_sequences, y in Y_sequences]
 end
 
+"""
+    pairwise_hamming(X; step, as_vec=true)
+
+Vector of pairwise hamming distances of sequences in `X`, ordered as
+`[H(1,2), H(1,3), ..., H(M-1, M)]` with `H` standing for hamming distance.
+If `as_vec=false`, will return a `Matrix` instead.
+"""
 function pairwise_hamming(X::Alignment; step=1, normalize=true, as_vec = true)
     D = pairwise_hamming(X, X; step, normalize)
     return if as_vec
