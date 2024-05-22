@@ -272,6 +272,8 @@ function subsample(X::AbstractAlignment, indices)
     data_copy = copy(X[indices])
     Y = copy(X)
     Y.data = data_copy
+    Y.weights = X.weights[indices] / sum(X.weights[indices])
+    Y.names = X.names[indices]
     return Y
 end
 
@@ -301,6 +303,6 @@ sequence_length(X::OneHotAlignment) = size(X, 2)
 sequence_number(X::AbstractAlignment) = last(size(X))
 
 function Random.rand(rng::AbstractRNG, X::Random.SamplerTrivial{<:AbstractAlignment})
-    M = sequence_number(X)
+    M = sequence_number(X[])
     return X[][rand(rng, 1:M)]
 end
