@@ -189,20 +189,20 @@ end
 #=
 to implement...
 =#
-@kwdef mutable struct OneHotAlignment{T<:Integer} <: AbstractAlignment
-    data::OneHotArray{T, 2, 3, Matrix{T}}
+@kwdef mutable struct OneHotAlignment{T} <: AbstractAlignment
+    data::OneHotArray{UInt32, 2, 3, Matrix{UInt32}}
     alphabet::Union{Nothing, Alphabet{T}}
     weights::Vector{Float64} = ones(size(data, 2))/size(data, 2) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(data, 2))
 
     function OneHotAlignment{T}(data, alphabet, weights, names) where T
-        @assert length(names) == length(weights) == size(data, 2) """\
+        @assert length(names) == length(weights) == size(data, 3) """\
             Inconsistent sizes between `data`, `weight` and `names` \
             - got $(size(data,2)), $(length(weights)), $(length(names))
             """
 
         # Check data and alphabet are consistent
-        @assert isnothing(alphabet) || all(i -> in(i, alphabet), data) """\
+        @assert isnothing(alphabet) || all(i -> in(i, alphabet), 1:size(data,1)) """\
             Some elements of `data` are not in `alphabet`
             """
 
@@ -212,8 +212,17 @@ to implement...
             Weights must sum to 1 - got $(sum(weights))
             """
 
-        return new{T}(Matrix(data), alphabet, weights, names)
+        return new{T}(data, alphabet, weights, names)
     end
+end
+
+function onehot(X::Alignment{T}) where T
+    return OneHotAlignment{T}(;
+        data = onehotbatch(X.data, 1:length(Alphabet(X))),
+        alphabet = Alphabet(X),
+        weights = X.weights,
+        names = X.names,
+    )
 end
 
 ###################################################################################
