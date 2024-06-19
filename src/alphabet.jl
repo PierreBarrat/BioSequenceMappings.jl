@@ -198,23 +198,30 @@ end
 ############ Transforming sequences ############
 ################################################
 
+(alphabet::Alphabet{T})(c::Char) where T = get(alphabet.char_to_index, c, one(T))
 function (alphabet::Alphabet{T})(S::AbstractString) where T
     return map(x -> get(alphabet.char_to_index, x, one(T)), collect(S)) # unknown chars automatically mapped to 1
 end
+
+(alphabet::Alphabet)(x::Integer) = alphabet.index_to_char[x]
 function (alphabet::Alphabet)(X::AbstractVector{<:Integer})
     return string(map(a -> alphabet.index_to_char[a], X)...)
 end
 
-# """
-#     int_to_symbol(s::AbstractVector{Int}, mapping = DEFAULT_AA_MAPPING)
-#     int_to_symbol(s; mapping = DEFAULT_AA_MAPPING)
+(alphabet::Alphabet)(::Missing) = missing
 
-# Convert vector of integers to string using `mapping`.
-# """
-# function int_to_symbol(s::AbstractVector{<:Integer}, mapping::AbstractDict = DEFAULT_AA_MAPPING)
-#     return string(map(x -> mapping[x], s)...)
-# end
-# int_to_symbol(s; mapping = DEFAULT_AA_MAPPING) = int_to_symbol(s, mapping)
+"""
+    translate(x, original_alphabet::Alphabet, new_alphabet::Alphabet)
+
+Return the translation in `new_alphabet` of an integer or a vector of integers `x` that is
+expressed in `original_alphabet`.
+"""
+function translate(x::Integer, original_alphabet::Alphabet, new_alphabet::Alphabet)
+    return x |> original_alphabet |> new_alphabet
+end
+function translate(X::AbstractVector{<:Integer}, A::Alphabet, B::Alphabet)
+    return map(x -> translate(x, A, B), X)
+end
 
 
 
