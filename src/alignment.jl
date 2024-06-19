@@ -279,8 +279,9 @@ Return an `Alignment` containing only the sequences of `X` at `indices`.
 subsample(X::AbstractAlignment, i::Int) = subsample(X, i:i)
 function subsample(X::AbstractAlignment, indices)
     data_copy = copy(X[indices])
-    Y = copy(X)
-    Y.data = data_copy
+    Y = Alignment(data_copy, copy(X.alphabet))
+    # Y = copy(X)
+    # Y.data = data_copy
     Y.weights = X.weights[indices] / sum(X.weights[indices])
     Y.names = X.names[indices]
     return Y
@@ -298,6 +299,32 @@ function subsample_random(X::AbstractAlignment, m::Int)
     @assert m < M "Cannot take $m different sequences from alignment of size $M"
     return subsample(X, randperm(M)[1:m])
 end
+
+"""
+    find_sequence(label::AbstractString, aln::AbstractAlignment)
+
+Find sequence `label` in `aln`, and return `(index, sequence)`.
+Scales as the number of sequences.
+
+!!! Return a *view* of the sequence.
+"""
+function find_sequence(label::AbstractString, aln::AbstractAlignment)
+    i = findfirst(==(label), aln.names)
+    return (i, isnothing(i) ? nothing : aln[i])
+end
+"""
+    match_sequences(pattern, aln::AbstractAlignment)
+
+Find sequences that match `label` in `aln`, and return `(indices, sequences)`.
+Sequences are returned as columns.
+
+!!! Return a *view* of the sequences.
+"""
+function match_sequences(pattern, aln::AbstractAlignment)
+    idx = findall(x -> occursin(pattern, x), aln.names)
+    return idx, aln[idx]
+end
+
 
 ################################################
 ##################### Misc #####################

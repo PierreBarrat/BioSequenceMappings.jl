@@ -16,8 +16,9 @@ export Alphabet
 export default_alphabet
 
 include("alignment.jl")
-export Alignment
+export Alignment, AbstractAlignment
 export eachsequence, sequence_length, sequence_number, subsample, subsample_random
+export find_sequence, match_sequences
 
 include("weights.jl")
 export compute_weights

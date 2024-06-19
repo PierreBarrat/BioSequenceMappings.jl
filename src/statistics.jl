@@ -23,7 +23,7 @@ function f1(X::AbstractAlignment, weights::Tuple{Any,Any})
 end
 
 """
-    site_specific_frequencies(X::AbstractAlignment, weights=nothing)
+    site_specific_frequencies(X::AbstractAlignment, weights=nothing; as_vec=true)
 
 Return the site specific frequencies of `X`.
 If `as_vec` (default), the result is a vector of length `Lxq`.

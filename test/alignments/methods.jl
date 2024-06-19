@@ -11,3 +11,7 @@
         @test BioSequenceMappings.compute_weights(X, θ; normalize=false)[1] ≈ w1
     end
 end
+
+@testset "find sequence" begin
+    @warn "I should write a test for `find_sequence` and `match_sequences`"
+end
