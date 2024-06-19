@@ -62,12 +62,11 @@ end
 @testset "Equality and hash" begin
     A1 = Alphabet(:dna, Int16)
     A2 = Alphabet(:dna, Int16) # same data and same type
-    A3 = Alphabet("-ACGT", Int16) # same data and same type
     B = Alphabet(:dna, Int8) # same data and different type
     C = Alphabet(:aa, Int16) # different data and same type
 
-    @test A1 == A2 == A3
-    @test hash(A1) == hash(A2) == hash(A3)
+    @test A1 == A2
+    @test hash(A1) == hash(A2)
     @test A1 != B && hash(A1) != hash(B)
 end
 
@@ -174,9 +173,9 @@ end
         alphabet(X) == "TGCA"
     end
 
-    @test_throws KeyError begin
+    @test_throws ErrorException begin
         X = [1,2,3,4,5,6]
-        alphabet = Alphabet(:dna)
+        alphabet = Alphabet("-ACGT")
         alphabet(X)
     end
     # Test with UTF8
