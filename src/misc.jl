@@ -1,10 +1,26 @@
-function hamming(X::AbstractVector{<:Integer}, Y::AbstractVector{<:Integer}; normalize=true)
+"""
+    hamming(x, y; normalize=true, positions=nothing)
+
+Hamming distance between `Vectors` `x` and `y`.
+Only sites in vector `positions` will be considered.
+"""
+function hamming(
+    X::AbstractVector{<:Integer}, Y::AbstractVector{<:Integer};
+    normalize=true, positions = nothing,
+)
     @assert length(X) == length(Y) """Expect vectors of same length.
         Instead $(length(X)) != $(length(Y))"""
-    H = sum(zip(X, Y)) do (x,y)
-        x != y
+    H = if isnothing(positions)
+        sum(zip(X, Y)) do (x,y)
+            x != y
+        end
+    else
+        sum(positions) do i
+            X[i] != Y[i]
+        end
     end
-    return normalize ? H / length(X) : H
+    Z = (isnothing(positions) ? length(X) : length(positions))
+    return normalize ? H / Z : H
 end
 
 
