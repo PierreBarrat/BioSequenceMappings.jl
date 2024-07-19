@@ -1,5 +1,5 @@
 #=
-A mapping is a `Dict{Char, Integer}`
+A mapping is a `Dict{A, <:Integer}` with `A` the type of symbols used (usually `Char`).
 For example, `Dict('A' => 1, 'C' => 2, ...)
 Below is a utility function for mappings
 =#
@@ -8,9 +8,9 @@ Below is a utility function for mappings
 
 Return a `Dict{Int, Char}`: `Dict(i => c for (i,c) in enumerate(s))`.
 """
-function compute_mapping(s::AbstractString, ::Type{T}=Int) where T <: Integer
-    @assert allunique(s) "Cannot compute mapping from string with duplicates - got $s"
-    return Dict{Char, T}(c => i for (i,c) in enumerate(s))
+function compute_mapping(s::AbstractVector{A}, ::Type{I}=Int) where {A,I<:Integer}
+    @assert allunique(s) "Cannot compute mapping from vector with duplicates - got $s"
+    return Dict{A, I}(c => i for (i, c) in enumerate(s))
 end
 function reverse_mapping(mapping::Dict{T,U}) where {T, U}
     return Dict{U,T}(y => x for (x, y) in mapping)
@@ -22,41 +22,52 @@ end
 
 
 """
-    struct Alphabet{T}
-        string::String
-        char_to_index::Dict{Char, T}
-        index_to_char::Dict{T, Char}
+    struct Alphabet{A,I}
+        characters::Vector{A}
+        char_to_index::Dict{A, I}
+        index_to_char::Dict{I, A}
     end
 
 `Alphabet` can be constructed
-- from a `String` and an optional type: `Alphabet(string::String[, T<:Integer])`
-- from a mapping `Dict{Char, T}` where `T<:Integer`: `Alphabet(mapping)`
+- from a `Vector` of symbols and an optional type, e.g. `Alphabet(['A','C','G','I'], UInt8)`
+- from a `String` and an optional type: `Alphabet(string::String[, I<:Integer])`
+- from a mapping `Dict{A, I}` where `I<:Integer`: `Alphabet(mapping)`
 - from a `Symbol`, using default alphabets
 - from an integer, using default alphabets (see `default_alphabets`).
 """
-@kwdef struct Alphabet{T<:Integer}
-    string::String # Alphabet string
-    char_to_index::Dict{Char, T} = compute_mapping(string)
-    index_to_char::Dict{T, Char} = reverse_mapping(char_to_index)
-    default_char::Union{Nothing, Char} = nothing
-    default_index::Union{Nothing, T} = _default_index_from_char(default_char, string)
+@kwdef struct Alphabet{A, I<:Integer}
+    characters::Vector{A} # Alphabet characters
+    char_to_index::Dict{A, I} = compute_mapping(characters)
+    index_to_char::Dict{I, A} = reverse_mapping(char_to_index)
+    default_char::Union{Nothing, A} = nothing
+    default_index::Union{Nothing, I} = _default_index_from_char(default_char, characters)
 
     # Constructor with checks
-    function Alphabet{T}(
-        string, char_to_index, index_to_char, default_char, default_index
-    ) where T
-        @assert isconcretetype(T) "Use concrete type to build `Alphabet` - got $T"
-        @assert length(string) == length(char_to_index) == length(index_to_char) """\
-            Inconsistent lengths between string, char_to_index and index_to_char:\
-            $(length(string)) vs $(length(char_to_index)) vs $(length(index_to_char))
+    function Alphabet{A,I}(
+        characters, char_to_index, index_to_char, default_char, default_index,
+    ) where {A,I}
+        @assert isconcretetype(I) && isconcretetype(A) """\
+            Use concrete type to build `Alphabet` - got `($A,$I)`
+            """
+        if !isbitstype(A)
+            @warn "Building alphabet using non bit-type symbols $(A). \
+            May lead to some issues, for instance when copying."
+        end
+        @assert !(A <: Integer) """\
+            Symbol type should not be `Integer`. Got $characters of type $A
+            """
+        @assert length(characters) == length(char_to_index) == length(index_to_char) """\
+            Inconsistent lengths between `characters`, `char_to_index` and `index_to_char`:\
+            $(length(characters)) vs $(length(char_to_index)) vs $(length(index_to_char))
             """
 
-        # are string and char_to_index consistent
-        @assert all(c -> haskey(char_to_index, c), string) """\
-            Incomplete char_to_index: some symbols in $string not in $char_to_index
+        # are characters and char_to_index consistent
+        @assert all(c -> haskey(char_to_index, c), characters) """\
+            Incomplete `char_to_index`: some symbols in $characters not in $char_to_index
             """
-        @assert all(x -> char_to_index[x[2]] == x[1], enumerate(string)) """\
-            Inconsistency between string and mapping: $string -- $mapping
+        @assert all(x -> char_to_index[x[2]] == x[1], enumerate(characters)) """\
+            Inconsistency between `characters` and `char_to_index`: \
+            $characters -- $(char_to_index)
             """
 
         # are char_to_index and index_to_char consistent
@@ -75,12 +86,13 @@ end
             Got `default_char=$(default_char)` and `default_index=$(default_index)`.
             These should either both be `nothing`, or both something.
             """
-        @assert isnothing(default_char) || occursin(default_char, string) """\
-            Default char $(default_char) not found in alphabet string $(string)
+        @assert isnothing(default_char) || in(default_char, characters) """\
+            Default char $(default_char) not found in alphabet characters $(string)
             Maybe use `default_char = c` with `c` in your alphabet?
             """
         @assert isnothing(default_index) || haskey(index_to_char, default_index) """\
-            Got `default_index=$(default_index)` but alphabet string of length $(length(string))
+            Got `default_index=$(default_index)` \
+            but alphabet `characters` of length $(length(characters))
             """
         @assert (isnothing(default_index) && isnothing(default_char)) ||
             index_to_char[default_index] == default_char """\
@@ -90,32 +102,33 @@ end
             """
 
         # Checking for duplicates
-        @assert allunique(string) """Cannot form alphabet from string with duplicates\
-            - got $s
+        @assert allunique(characters) """Cannot form alphabet from `characters` with duplicates\
+            - got $characters
             """
-        return new{T}(string, char_to_index, index_to_char, default_char, default_index)
+        return new{A,I}(characters, char_to_index, index_to_char, default_char, default_index)
     end
 end
 
-_default_index_from_char(c::AbstractChar, S::AbstractString) = findfirst(==(c), S)
-_default_index_from_char(::Nothing, ::AbstractString) = nothing
+_default_index_from_char(c, characters::AbstractVector) = findfirst(==(c), characters)
+_default_index_from_char(::Nothing, ::AbstractVector) = nothing
 
 ################################################
 ############## Equality, copying ###############
 ################################################
 
-function Base.:(==)(A::Alphabet{T}, B::Alphabet{U}) where {T,U}
-    return T == U &&
-    A.string == B.string &&
-    A.default_char == B.default_char
-    A.default_index == B.default_index
-    A.index_to_char == B.index_to_char &&
-    A.char_to_index == B.char_to_index
+function Base.:(==)(α::Alphabet{A,I}, β::Alphabet{B,J}) where {A,B,I,J}
+    return A == B &&
+        I == J &&
+        α.characters == β.characters &&
+        α.default_char == β.default_char
+        α.default_index == β.default_index
+        α.index_to_char == β.index_to_char &&
+        α.char_to_index == β.char_to_index
 end
 
-function Base.hash(alphabet::Alphabet{T}, h::UInt) where T
-    h = hash(Alphabet{T}, h)
-    h = hash(alphabet.string, h)
+function Base.hash(alphabet::Alphabet{A,I}, h::UInt) where {A,I}
+    h = hash(Alphabet{A,I}, h)
+    h = hash(alphabet.characters, h)
     h = hash(alphabet.index_to_char, h)
     h = hash(alphabet.char_to_index, h)
     h = hash(alphabet.default_char, h)
@@ -123,28 +136,29 @@ function Base.hash(alphabet::Alphabet{T}, h::UInt) where T
     return h
 end
 
-function Base.copy(A::Alphabet{T}) where T
-    return Alphabet{T}(;
-        string = A.string, # strings are immutable so I don't need to copy
-        char_to_index = copy(A.char_to_index),
-        index_to_char = copy(A.index_to_char),
-        default_char = A.default_char,
-        default_index = A.default_index,
+function Base.copy(alphabet::Alphabet{A,I}) where {A,I}
+    return Alphabet{A,I}(;
+        characters = copy(alphabet.characters), # assumes A is bit type, otherwise deepcopy
+        char_to_index = copy(alphabet.char_to_index),
+        index_to_char = copy(alphabet.index_to_char),
+        default_char = alphabet.default_char,
+        default_index = alphabet.default_index,
     )
 end
-Base.convert(::Type{T}, A::Alphabet{T}) where T = A
-Base.convert(::Type{Alphabet{T}}, A::Alphabet{T}) where T = A
-function Base.convert(::Type{T}, A::Alphabet) where T <: Integer
-    return Alphabet{T}(;
-        string = A.string,
-        char_to_index = convert(Dict{Char, T}, A.char_to_index),
-        index_to_char = convert(Dict{T, Char}, A.index_to_char),
-        default_char = A.default_char,
-        default_index = isnothing(A.default_index) ? nothing : convert(T, A.default_index),
+
+Base.convert(::Type{I}, alphabet::Alphabet{A,I}) where {A,I<:Integer} = alphabet
+Base.convert(::Type{Alphabet{A,I}}, alphabet::Alphabet{A,I}) where {A,I} = alphabet
+function Base.convert(::Type{J}, α::Alphabet{A,I}) where {A,I,J<:Integer}
+    return Alphabet{A,J}(;
+        characters = copy(α.characters),
+        char_to_index = convert(Dict{A, J}, α.char_to_index),
+        index_to_char = convert(Dict{J, A}, α.index_to_char),
+        default_char = α.default_char,
+        default_index = isnothing(α.default_index) ? nothing : convert(J, α.default_index)
     )
 end
-function Base.convert(::Type{Alphabet{T}}, A::Alphabet) where T <: Integer
-    return convert(T, A)
+function Base.convert(::Type{Alphabet{A,J}}, alphabet::Alphabet{A,I}) where {A,I,J<:Integer}
+    return convert(J, alphabet)
 end
 
 ################################################
@@ -152,20 +166,37 @@ end
 ################################################
 
 
-function Alphabet(S::AbstractString, ::Type{T}=Int; kwargs...) where T <: Integer
-    return Alphabet{T}(; string = S, char_to_index = compute_mapping(S, T), kwargs...)
+function Alphabet(
+    characters::AbstractVector{<:A}, ::Type{I}=Int; kwargs...
+) where {A, I<:Integer}
+    return Alphabet{A,I}(;
+        characters,
+        char_to_index = compute_mapping(characters, I),
+        kwargs...
+    )
+end
+function Alphabet(S::AbstractString, ::Type{I}=Int; kwargs...) where I
+    return Alphabet(collect(S), I; kwargs...)
 end
 Alphabet(A::Alphabet) = A
-Alphabet(A::Alphabet{T}, ::Type{U}) where {T,U} = convert(U, A)
-function Alphabet(S::AbstractString, mapping::Dict{<:AbstractChar, T}; kwargs...) where T<:Integer
-    return Alphabet{T}(; string = S, char_to_index = mapping, kwargs...)
+Alphabet(alphabet::Alphabet{A,I}, ::Type{J}) where {A,I,J} = convert(J, alphabet)
+function Alphabet(characters::AbstractVector{A}, mapping::Dict{A,I}; kwargs...) where {A,I}
+    return Alphabet{A,I}(;
+        characters,
+        char_to_index = mapping,
+        kwargs...
+    )
 end
-function Alphabet(mapping::AbstractDict{Char, T}; kwargs...) where T
-    str = Vector{Char}(undef, length(mapping))
-    for (c, i) in mapping
-        str[i] = c
+function Alphabet(S::AbstractString, mapping::Dict{<:AbstractChar, I}; kwargs...) where I
+    return Alphabet(collect(S), mapping; kwargs...)
+end
+function Alphabet(char_to_index::AbstractDict{A, I}; kwargs...) where {A,I}
+    # cannot do collect(keys(...)) because of undefined ordering of Dict
+    characters = Vector{A}(undef, length(char_to_index))
+    for (c, i) in char_to_index
+        characters[i] = c
     end
-    return Alphabet{T}(; string = prod(str), char_to_index = mapping, kwargs...)
+    return Alphabet{A,I}(; characters, char_to_index, kwargs...)
 end
 
 ################################################
@@ -234,14 +265,17 @@ end
 ################################################
 
 
-function (alphabet::Alphabet{T})(c::Char) where T
+function (alphabet::Alphabet{A,T})(c::A) where {A,T}
     i = get(alphabet.char_to_index, c, alphabet.default_index)
     if isnothing(i)
-        error("Char $c not in alphabet, and no defaults set.")
+        error("Symbol $c not in alphabet, and no defaults set.")
     end
     return i
 end
-function (alphabet::Alphabet{T})(S::AbstractString) where T
+function (alphabet::Alphabet{A,T})(S::AbstractVector{<:A}) where {A,T}
+    return map(x -> alphabet(x), S)
+end
+function (alphabet::Alphabet{Char,T})(S::AbstractString) where T
     return map(x -> alphabet(x), collect(S))
 end
 
@@ -277,30 +311,33 @@ end
 ##################### Misc #####################
 ################################################
 
-Base.length(alphabet::Alphabet) = length(alphabet.string)
+Base.length(alphabet::Alphabet) = length(alphabet.characters)
 
 Base.in(i::Integer, alphabet::Alphabet) = haskey(alphabet.index_to_char, i)
-Base.in(c::Char, alphabet::Alphabet) = haskey(alphabet.char_to_index, c)
+Base.in(c::A, alphabet::Alphabet{A,I}) where {A,I} = haskey(alphabet.char_to_index, c)
 
-function name(A::Alphabet)
-    return if A.string == _DEFAULT_AA_ALPHABET_STRING
+function name(alphabet::Alphabet{Char,I}) where I
+    return if prod(alphabet.characters) == _DEFAULT_AA_ALPHABET_STRING
         :aa
-    elseif A.string == _DEFAULT_NT_ALPHABET_STRING
+    elseif prod(alphabet.characters) == _DEFAULT_NT_ALPHABET_STRING
         :dna
-    elseif A.string == _DEFAULT_BINARY_ALPHABET_STRING
+    elseif prod(alphabet.characters) == _DEFAULT_BINARY_ALPHABET_STRING
         :binary
     else
         :custom
     end
 end
+function name(alphabet::Alphabet{A,I}) where {A,I}
+    return :custom
+end
 
 Base.getindex(alphabet::Alphabet, i::Integer) = alphabet.index_to_char[i]
-Base.getindex(alphabet::Alphabet, c::Char) = alphabet.char_to_index[c]
+Base.getindex(alphabet::Alphabet{A,I}, c::A) where {A,I} = alphabet.char_to_index[c]
 
-function Base.show(io::IO, A::Alphabet{T}) where T
-    print(io, "Alphabet{$T}: \"$(A.string)\"")
+function Base.show(io::IO, alphabet::Alphabet{A,I}) where {A,I}
+    print(io, "Alphabet{$A,$I}: $(alphabet.characters)")
 end
-function Base.show(io::IO, x::MIME"text/plain", A::Alphabet{T}) where T
-    println(io, "$(name(A)) Alphabet{$T} with mapping \"$(A.string)\"")
+function Base.show(io::IO, x::MIME"text/plain", alphabet::Alphabet{A,I}) where {A,I}
+    println(io, "$(name(alphabet)) Alphabet{$A,$I} with mapping $(alphabet.characters)")
 end
 

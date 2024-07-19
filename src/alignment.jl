@@ -5,11 +5,11 @@ abstract type AbstractAlignment end
 ###################################################################################
 
 """
-    mutable struct Alignment{T} where T <: Integer
+    mutable struct Alignment{A,T} where {A, T<:Integer}
 
 ```
     dat::Matrix{T}
-    alphabet::Union{Nothing, Alphabet{T}}
+    alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(dat,1))/size(dat,1) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(dat, 1))
 ```
@@ -18,7 +18,7 @@ Biological sequences as vectors of type `T<:Integer`.
 `dat` stores sequences in *columns*: `size(dat)` returns a tuple `(L, M)` with `L` the
 length and `M` the number of sequences.
 
-`alphabet` represents the mapping between integers in `dat` and biological symbols (nucleotides, amino acids...).
+`alphabet{A,T}` represents the mapping between integers in `dat` and biological symbols of type `A` (nucleotides, amino acids...).
 If `nothing`, the alignment cannot be mapped to biological sequences.
 
 `weights` represent phylogenetic weights, and are initialized to `1/M`. They must sum to 1.
@@ -37,13 +37,13 @@ of `dat`. They do not have to be unique, and can be ignored
 - `eachsequence_weighted(X::Alignment)` returns an iterator over sequences and weights as tuples
 - `subaln(X::Alignment, idx)` constructs the subaln defined by index `idx`.
 """
-@kwdef mutable struct Alignment{T<:Integer} <: AbstractAlignment
+@kwdef mutable struct Alignment{A, T<:Integer} <: AbstractAlignment
     data::Matrix{T}
-    alphabet::Union{Nothing, Alphabet{T}}
+    alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(data, 2))/size(data, 2) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(data, 2))
 
-    function Alignment{T}(data, alphabet, weights, names) where T
+    function Alignment{A,T}(data, alphabet, weights, names) where {A,T}
         @assert length(names) == length(weights) == size(data, 2) """\
             Inconsistent sizes between `data`, `weight` and `names` \
             - got $(size(data,2)), $(length(weights)), $(length(names))
@@ -60,7 +60,7 @@ of `dat`. They do not have to be unique, and can be ignored
             Weights must sum to 1 - got $(sum(weights))
             """
 
-        return new{T}(Matrix(data), alphabet, weights, names)
+        return new{A,T}(Matrix(data), alphabet, weights, names)
     end
 end
 
@@ -102,13 +102,13 @@ Different options for alphabet
 
 If the types of `alphabet` and `data` mismatch, `data` is converted.
 """
-function Alignment(data::AbstractMatrix{T}, alphabet::Alphabet{T}; kwargs...) where T
-    return Alignment{T}(;data, alphabet, kwargs...)
+function Alignment(data::AbstractMatrix{T}, alphabet::Alphabet{A,T}; kwargs...) where {A,T}
+    return Alignment{A,T}(;data, alphabet, kwargs...)
 end
 function Alignment(data::AbstractMatrix{T}, ::Nothing; kwargs...) where T
-    return Alignment{T}(; data, alphabet=nothing, kwargs...)
+    return Alignment{Nothing,T}(; data, alphabet=nothing, kwargs...)
 end
-function Alignment(D::AbstractMatrix{T}, alphabet::Alphabet{U}; kwargs...) where {T,U}
+function Alignment(D::AbstractMatrix{T}, alphabet::Alphabet{A,U}; kwargs...) where {A,T,U}
     data = convert(Matrix{U}, D)
     return Alignment(data, alphabet; kwargs...) # go to the first constructor
 end
@@ -120,7 +120,7 @@ function Alignment(data::AbstractVector{<:AbstractVector{T}}, alphabet; kwargs..
     return Alignment(reduce(hcat, data), alphabet; kwargs...)
 end
 
-function Alignment(data::AbstractVector{T}, alphabet::Alphabet{T}; kwargs...) where T
+function Alignment(data::AbstractVector{T}, alphabet::Alphabet{A,T}; kwargs...) where {A,T}
     return Alignment(reshape(data, length(data), 1), alphabet; kwargs...)
 end
 
@@ -158,8 +158,8 @@ function Base.show(io::IO, x::MIME"text/plain", X::Alignment)
     show(io, x, X.data')
 end
 
-function Base.copy(X::Alignment{T}) where T
-    return Alignment{T}(;
+function Base.copy(X::Alignment{A,T}) where {A,T}
+    return Alignment{A,T}(;
         data = copy(X.data),
         alphabet = copy(X.alphabet),
         weights = copy(X.weights),
@@ -167,17 +167,17 @@ function Base.copy(X::Alignment{T}) where T
     )
 end
 
-Base.convert(::Type{T}, X::Alignment{T}) where T = X
-Base.convert(::Type{Alignment{T}}, X::Alignment{T}) where T = X
-function Base.convert(::Type{T}, X::Alignment) where T <: Integer
-    return Alignment{T}(;
-        data = convert(Matrix{T}, X.data),
-        alphabet = convert(T, X.alphabet),
+Base.convert(::Type{T}, X::Alignment{A,T}) where {A,T} = X
+Base.convert(::Type{Alignment{A,T}}, X::Alignment{A,T}) where {A,T} = X
+function Base.convert(::Type{I}, X::Alignment{A,J}) where {I<:Integer,A,J}
+    return Alignment{A,I}(;
+        data = convert(Matrix{I}, X.data),
+        alphabet = convert(I, X.alphabet),
         weights = copy(X.weights),
         names = copy(X.names),
     )
 end
-function Base.convert(::Type{Alignment{T}}, X::Alignment) where T <: Integer
+function Base.convert(::Type{Alignment{A,T}}, X::Alignment) where {A,T} <: Integer
     return convert(T, X)
 end
 
@@ -189,13 +189,13 @@ end
 #=
 to implement...
 =#
-@kwdef mutable struct OneHotAlignment{T} <: AbstractAlignment
+@kwdef mutable struct OneHotAlignment{A,T} <: AbstractAlignment
     data::OneHotArray{UInt32, 2, 3, Matrix{UInt32}}
-    alphabet::Union{Nothing, Alphabet{T}}
+    alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(data, 2))/size(data, 2) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(data, 2))
 
-    function OneHotAlignment{T}(data, alphabet, weights, names) where T
+    function OneHotAlignment{A,T}(data, alphabet, weights, names) where {A,T}
         @assert length(names) == length(weights) == size(data, 3) """\
             Inconsistent sizes between `data`, `weight` and `names` \
             - got $(size(data,2)), $(length(weights)), $(length(names))
@@ -212,12 +212,12 @@ to implement...
             Weights must sum to 1 - got $(sum(weights))
             """
 
-        return new{T}(data, alphabet, weights, names)
+        return new{A,T}(data, alphabet, weights, names)
     end
 end
 
-function onehot(X::Alignment{T}) where T
-    return OneHotAlignment{T}(;
+function onehot(X::Alignment{A,T}) where {A,T}
+    return OneHotAlignment{A,T}(;
         data = onehotbatch(X.data, 1:length(Alphabet(X))),
         alphabet = Alphabet(X),
         weights = X.weights,
@@ -256,7 +256,7 @@ end
 
 
 # Different for OneHot and normal alignment
-Base.eltype(X::Alignment{T}) where T = AbstractVector{T}
+Base.eltype(X::Alignment{A,T}) where {A,T} = AbstractVector{T}
 
 function Base.iterate(rX::Iterators.Reverse{<:AbstractAlignment})
     iterate(Iterators.Reverse(eachslice(rX.itr.data, dims = ndims(rX.itr.data))))

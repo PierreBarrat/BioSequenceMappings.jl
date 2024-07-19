@@ -2,7 +2,7 @@
     @testset "Basic" begin
         data = Matrix{Int}([1 2 3; 2 3 4])
         alignment = Alignment(data; verbose=false)
-        @test typeof(alignment) == Alignment{Int}
+        @test typeof(alignment) == Alignment{Char, Int} # should autofind nt alphabet
         @test size(alignment.data) == (2, 3)
         @test length(alignment.weights) == 3
         @test length(alignment.names) == 3
@@ -12,14 +12,14 @@
     @testset "With type" begin
         data = Matrix{Int8}([1 2 3; 2 3 4])
         alignment = Alignment(data; verbose=false)
-        @test typeof(alignment) == Alignment{Int8}
+        @test typeof(alignment) == Alignment{Char,Int8}
         @test Alphabet(alignment) == BioSequenceMappings.default_alphabet(4, Int8)
     end
 
     @testset "Without alphabet" begin
         data = Matrix{Int8}([1 2 3; 2 3 4])
         alignment = Alignment(data; alphabet = nothing)
-        @test typeof(alignment) == Alignment{Int8}
+        @test typeof(alignment) == Alignment{Nothing, Int8}
         @test isnothing(alignment.alphabet)
     end
 end
@@ -29,20 +29,20 @@ end
     @testset "Basic" begin
         alphabet = Alphabet("ACGT", Int16)
         alignment = Alignment(data, alphabet)
-        @test typeof(alignment) == Alignment{Int16}
+        @test typeof(alignment) == Alignment{Char, Int16}
         @test Alphabet(alignment) == alphabet
     end
 
     @testset "Mismatched types" begin
         alphabet = Alphabet("ACGT", Int8)
         alignment = Alignment(data, alphabet)
-        @test typeof(alignment) == Alignment{Int8}
+        @test typeof(alignment) == Alignment{Char, Int8}
         @test Alphabet(alignment) == alphabet
     end
 
     @testset "From alphabet constructor" begin
         alignment = Alignment(data, "BCDE")
-        @test typeof(alignment) == Alignment{Int16}
+        @test typeof(alignment) == Alignment{Char, Int16}
         @test Alphabet(alignment) == Alphabet("BCDE", Int16)
     end
 
@@ -58,7 +58,7 @@ end
     @testset "From vector of vectors" begin
         vecdat = Matrix{Int}([1 2 3; 2 3 4]) |> eachcol |> collect
         alignment = Alignment(vecdat, :dna)
-        @test typeof(alignment) == Alignment{Int}
+        @test typeof(alignment) == Alignment{Char, Int}
         @test size(alignment) == (2, 3) # three sequences of length 2
         @test Alphabet(alignment) == Alphabet(:dna, Int)
     end
