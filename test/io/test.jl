@@ -5,6 +5,7 @@ basedir = dirname(@__FILE__)
     @test auto_alph(joinpath(basedir, "toy_fasta_aa.fasta")) == Alphabet(:aa)
     @test auto_alph(joinpath(basedir, "toy_fasta_dna.fasta")) == Alphabet(:dna)
     @test auto_alph(joinpath(basedir, "toy_fasta_bin.fasta")) == Alphabet(:binary)
+    @info "Tests: warning will be produced below"
     @test !in(
         auto_alph(joinpath(basedir, "toy_fasta_else.fasta")),
         [Alphabet(:dna), Alphabet(:aa), Alphabet(:binary)]
