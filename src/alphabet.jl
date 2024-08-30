@@ -264,7 +264,7 @@ end
 ############ Transforming sequences ############
 ################################################
 
-
+## Symbol to Int
 function (alphabet::Alphabet{A,T})(c::A) where {A,T}
     i = get(alphabet.char_to_index, c, alphabet.default_index)
     if isnothing(i)
@@ -279,16 +279,20 @@ function (alphabet::Alphabet{Char,T})(S::AbstractString) where T
     return map(x -> alphabet(x), collect(S))
 end
 
+## Int to Symbol
 function (alphabet::Alphabet)(x::Integer)
     c = get(alphabet.index_to_char, x, alphabet.default_char)
     if isnothing(c)
-        error("Index $x does not represent any characters, and not defaults set.")
+        error("$x is not in alphabet symbols, and no defaults set.")
     end
     return c
 end
-function (alphabet::Alphabet)(X::AbstractVector{<:Integer})
-    return string(map(a -> alphabet(a), X)...)
+# If it makes sense, convert a `Vector{Int}` to a string
+function (alphabet::Alphabet{<:AbstractChar,T} where T<:Integer)(X::AbstractVector{<:Integer})
+    return prod(map(alphabet, X))
 end
+# Otherwise return an array of symbols
+(alphabet::Alphabet)(X::AbstractVector{<:Integer}) = map(alphabet, X)
 
 (alphabet::Alphabet)(::Missing) = missing
 
@@ -304,8 +308,6 @@ end
 function translate(X::AbstractVector{<:Integer}, A::Alphabet, B::Alphabet)
     return map(x -> translate(x, A, B), X)
 end
-
-
 
 ################################################
 ##################### Misc #####################
@@ -340,4 +342,11 @@ end
 function Base.show(io::IO, x::MIME"text/plain", alphabet::Alphabet{A,I}) where {A,I}
     println(io, "$(name(alphabet)) Alphabet{$A,$I} with mapping $(alphabet.characters)")
 end
+
+"""
+    symbols(alphabet)
+
+Return the vector of symbols/characters used by `alphabet`.
+"""
+symbols(alphabet::Alphabet) = alphabet.characters
 
