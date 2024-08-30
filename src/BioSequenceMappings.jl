@@ -13,7 +13,7 @@ import Base: write
 
 include("alphabet.jl")
 export Alphabet
-export default_alphabet
+export default_alphabet, symbols
 
 include("alignment.jl")
 export Alignment, AbstractAlignment
