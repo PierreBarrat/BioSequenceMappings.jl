@@ -8,30 +8,29 @@ abstract type AbstractAlignment end
     mutable struct Alignment{A,T} where {A, T<:Integer}
 
 ```
-    dat::Matrix{T}
+    data::Matrix{T}
     alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(dat,1))/size(dat,1) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(dat, 1))
 ```
 
 Biological sequences as vectors of type `T<:Integer`.
-`dat` stores sequences in *columns*: `size(dat)` returns a tuple `(L, M)` with `L` the
+`data` stores sequences in *columns*: `size(dat)` returns a tuple `(L, M)` with `L` the
 length and `M` the number of sequences.
+When displayed, shows `data` as an `MxL` matrix to match with traditional alignments.
 
-`alphabet{A,T}` represents the mapping between integers in `dat` and biological symbols of type `A` (nucleotides, amino acids...).
+`alphabet{A,T}` represents the mapping between integers in `data` and biological symbols of type `A` (nucleotides, amino acids...).
 If `nothing`, the alignment cannot be mapped to biological sequences.
 
 `weights` represent phylogenetic weights, and are initialized to `1/M`. They must sum to 1.
 `names` are the label of sequences, and are expected to be in the same order as the columns
-of `dat`. They do not have to be unique, and can be ignored
+of `data`. They do not have to be unique, and can be ignored
 
-# **Important**: When built from a matrix, will *transpose* the input; if `size(dat) = (M, L)`,
-# `X=Alignment(dat, alphabet)` will return an object with `size(X.dat) = (L, M)`.
-# In other words, assumes that the input matrix has sequences as rows.
+**Important**: When built from a matrix, assumes that the sequences are stored in *columns*.
 
 ## Methods
 
-- `getindex(X::Alignment, i)` returns a matrix/vector `X.dat[:, i]`.
+- `getindex(X::Alignment, i)` returns a matrix/vector `X.data[:, i]`.
 - `for s in X::Alignment` iterates over sequences.
 - `eachsequence(X::Alignment)` returns an iterator over sequences (`Vector{Int}`).
 - `eachsequence_weighted(X::Alignment)` returns an iterator over sequences and weights as tuples
@@ -60,7 +59,7 @@ of `dat`. They do not have to be unique, and can be ignored
             Weights must sum to 1 - got $(sum(weights))
             """
 
-        return new{A,T}(Matrix(data), alphabet, weights, names)
+        return new{A,T}(Matrix(data), copy(alphabet), copy(weights), string.(names))
     end
 end
 
@@ -93,12 +92,12 @@ Different options for alphabet
 """
     Alignment(data::AbstractMatrix, alphabet; kwargs...)
 
-`data` is a matrix of integers.
+`data` is a matrix of integers, with sequences stored in columns.
 `alphabet` can be either
-    - an `Alphabet`
-    - `nothing`
-    - something to build an alphabet from: the constructor `Alphabet` will be called.
-    (*e.g.* a symbol like `:aa`, a string, ...)
+- an `Alphabet`
+- `nothing`: no conversion from integers to biological symbols.
+- something to build an alphabet from (*e.g.* a symbol like `:aa`, a string, ...).
+    The constructor `Alphabet` will be called like so: `Alphabet(alphabet)`.
 
 If the types of `alphabet` and `data` mismatch, `data` is converted.
 """
@@ -127,7 +126,8 @@ end
 """
     Alignment(data::AbstractMatrix{T}; alphabet = :auto, kwargs...)
 
-Keyword argument `alphabet` can be `:auto`, `:none` or `nothing`, or an input to `Alphabet`.
+Keyword argument `alphabet` can be `:auto`, `:none`/`nothing`, or an input to the
+constructor `Alphabet`.
 Other keyword arguments are passed to the default constructor of `Alignment`.
 """
 function Alignment(
@@ -254,6 +254,14 @@ function eachsequence(X::AbstractAlignment; skip::Integer = 1)
     end
 end
 
+function named_sequences(X::AbstractAlignment; skip::Integer = 1)
+    @assert skip > 0 "`skip` kwarg must be positive - instead $skip"
+    return if skip == 1
+        zip(X.names, eachslice(X.data, dims=ndims(X.data)))
+    else
+        zip(X.names[1:skip:size(X.data)[end]], eachsequence(X, 1:skip:size(X.data)[end]))
+    end
+end
 
 # Different for OneHot and normal alignment
 Base.eltype(X::Alignment{A,T}) where {A,T} = AbstractVector{T}
@@ -303,7 +311,7 @@ end
 """
     find_sequence(label::AbstractString, aln::AbstractAlignment)
 
-Find sequence `label` in `aln`, and return `(index, sequence)`.
+Find sequence with name `label` in `aln`, and return `(index, sequence)`.
 Scales as the number of sequences.
 
 !!! Return a *view* of the sequence.
@@ -315,7 +323,7 @@ end
 """
     match_sequences(pattern, aln::AbstractAlignment)
 
-Find sequences that match `label` in `aln`, and return `(indices, sequences)`.
+Find sequences whose name matches `label` in `aln`, and return `(indices, sequences)`.
 Sequences are returned as columns.
 
 !!! Return a *view* of the sequences.
