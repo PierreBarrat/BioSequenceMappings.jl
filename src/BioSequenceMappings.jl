@@ -30,6 +30,6 @@ include("misc.jl")
 export hamming, pairwise_hamming
 
 include("statistics.jl")
-export site_specific_frequencies, consensus
+export site_specific_frequencies, consensus, pairwise_frequencies
 
 end
