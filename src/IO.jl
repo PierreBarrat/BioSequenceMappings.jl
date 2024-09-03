@@ -74,7 +74,7 @@ function Base.write(io::IO, X::Alignment)
     return FASTAWriter(io) do fw
         for (i, seq) in enumerate(X)
             header = isempty(X.names[i]) ? "$i" : X.names[i]
-            rec = FASTARecord(header, X.alphabet(seq))
+            rec = FASTARecord(header, to_string(seq, X.alphabet))
             write(fw, rec)
         end
     end

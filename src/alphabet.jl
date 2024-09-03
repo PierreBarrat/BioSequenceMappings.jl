@@ -296,6 +296,16 @@ end
 
 (alphabet::Alphabet)(::Missing) = missing
 
+# Equivalent to alphabet(X) for Char based alphabets
+# Otherwise, can be overloaded for the desired effect
+# Used when writing fasta
+function to_string(
+    X::AbstractVector{<:Integer},
+    alphabet::Alphabet{<:AbstractChar,<:Integer},
+)
+    return alphabet(X)
+end
+
 """
     translate(x, original_alphabet::Alphabet, new_alphabet::Alphabet)
 
