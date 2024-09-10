@@ -41,7 +41,9 @@ of `data`. They do not have to be unique, and can be ignored
     alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(data, 2))/size(data, 2) # phylogenetic weights of sequences
     names::Vector{String} = fill("", size(data, 2))
-
+    function Alignment{A,T}(data, alphabet, weights, ::Nothing) where {A, T}
+        return Alignment{A,T}(data, alphabet, weights, fill("", size(data, 2)))
+    end
     function Alignment{A,T}(data, alphabet, weights, names) where {A,T}
         @assert length(names) == length(weights) == size(data, 2) """\
             Inconsistent sizes between `data`, `weight` and `names` \
@@ -59,7 +61,8 @@ of `data`. They do not have to be unique, and can be ignored
             Weights must sum to 1 - got $(sum(weights))
             """
 
-        return new{A,T}(Matrix(data), copy(alphabet), copy(weights), string.(names))
+        alphabet_copy = isnothing(alphabet) ? nothing : copy(alphabet)
+        return new{A,T}(Matrix(data), alphabet_copy, copy(weights), string.(names))
     end
 end
 
@@ -149,8 +152,7 @@ end
 
 function Base.show(io::IO, X::Alignment)
     L, M = size(X)
-    print(io, "Alignment of M=$M sequences of length L=$L - Shown as `MxL` matrix")
-    show(io, X.data')
+    print(io, "Alignment of M=$M sequences of length L=$L")
 end
 function Base.show(io::IO, x::MIME"text/plain", X::Alignment)
     L, M = size(X)
