@@ -53,6 +53,8 @@ of `data`. They do not have to be unique, and can be ignored
         # Check data and alphabet are consistent
         @assert isnothing(alphabet) || all(i -> in(i, alphabet), data) """\
             Some elements of `data` are not in `alphabet`
+            Alphabet: $alphabet
+            Problematic data: $(data[findall(x -> !in(x, alphabet), data)])
             """
 
         # Check weights
@@ -179,7 +181,7 @@ function Base.convert(::Type{I}, X::Alignment{A,J}) where {I<:Integer,A,J}
         names = copy(X.names),
     )
 end
-function Base.convert(::Type{Alignment{A,T}}, X::Alignment) where {A,T} <: Integer
+function Base.convert(::Type{Alignment{A,T}}, X::Alignment) where {A,T<:Integer}
     return convert(T, X)
 end
 
@@ -244,6 +246,13 @@ function Base.iterate(X::AbstractAlignment, state)
     return iterate(eachslice(X.data, dims=ndims(X.data)), state)
 end
 
+"""
+    eachsequence(X::AbstractAlignment[, indices]; skip)
+
+Return an iterator over the sequences in `X`.
+If `indices` is specified, consider only sequences at the corresponding indices.
+Use the integer argument `skip` to return only one sequence every `skip` (~ `1:skip:end`).
+"""
 function eachsequence(X::AbstractAlignment, indices)
     return Iterators.map(i -> selectdim(X.data, ndims(X.data), i), indices)
 end
@@ -256,6 +265,11 @@ function eachsequence(X::AbstractAlignment; skip::Integer = 1)
     end
 end
 
+"""
+    named_sequences(X::AbstractAlignment; skip)
+
+Return an iterator of the form `(name, sequence)` over `X`.
+"""
 function named_sequences(X::AbstractAlignment; skip::Integer = 1)
     @assert skip > 0 "`skip` kwarg must be positive - instead $skip"
     return if skip == 1
