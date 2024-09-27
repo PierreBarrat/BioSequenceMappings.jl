@@ -74,3 +74,21 @@ function pairwise_frequencies(X::AbstractAlignment, args...; as_mat=false)
     end
     return f
 end
+
+function pairwise_correlations(X::AbstractAlignment, args...; as_mat=false)
+    f1 = site_specific_frequencies(X)
+    f2 = pairwise_frequencies(X)
+
+    q, L = size(f1)
+    C = zeros(Float64, q, q, L, L)
+
+    for i in 1:L, j in (i+1):L, a in 1:q, b in 1:q
+        C[a, b, i, j] = f2[a, b, i, j] - f1[a, i]*f1[b, j]
+        C[b, a, j, i] = C[a, b, i, j]
+    end
+    if as_mat
+        permutedims!(C, [1, 3, 2, 4])
+        return reshape(C, q*L, q*L)
+    end
+    return C
+end
