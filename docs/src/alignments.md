@@ -81,8 +81,8 @@ If the name of the sequence is needed, the iterator [`named_sequences`](@ref) ca
 
 The package provides [`find_sequence`](@ref) to find sequences by name in an alignment, and [`match_sequences`](@ref) to match all sequences with a particular name pattern. 
 
-```jldoctest align2
-julia> A = read_fasta("../example/toy_fasta_dna.fasta");
+```jldoctest align2; setup = :(example_dir = joinpath(dirname(pathof(BioSequenceMappings)), "../example"))
+julia> A = read_fasta(joinpath(example_dir, "toy_fasta_dna.fasta"));
 
 julia> n = A.names[1] # name of the first sequence in the alignment
 "sequence_1"
