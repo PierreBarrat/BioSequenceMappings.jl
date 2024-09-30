@@ -26,14 +26,18 @@ end
         characters::Vector{A}
         char_to_index::Dict{A, I}
         index_to_char::Dict{I, A}
+        default_char = nothing
+        default_index
     end
 
+Structure allowing the mapping from biological symbols of type `A` to integers of type `I`.
+    The typical use case would be `Alphabet{Char, Int}`.
 `Alphabet` can be constructed
-- from a `Vector` of symbols and an optional type, e.g. `Alphabet(['A','C','G','I'], UInt8)`
-- from a `String` and an optional type: `Alphabet(string::String[, I<:Integer])`
-- from a mapping `Dict{A, I}` where `I<:Integer`: `Alphabet(mapping)`
-- from a `Symbol`, using default alphabets
-- from an integer, using default alphabets (see `default_alphabets`).
+- from a `Vector` of symbols and an optional type `I`, *e.g.* `Alphabet(['A','C','G','T'], UInt8)::Alphabet{Char, UInt8}`
+- from a `String` and an optional type, *e.g.* `Alphabet("ACGT")`
+- from a mapping `Dict{A, I}` where `I<:Integer`: `Alphabet(Dict('A'=>1, 'C'=>2))`
+- from a `Symbol`, using default alphabets, *e.g.* `Alphabet(:nt)`
+- from an integer, using default alphabets (see `?default_alphabets`).
 """
 @kwdef struct Alphabet{A, I<:Integer}
     characters::Vector{A} # Alphabet characters
@@ -85,6 +89,7 @@ end
         @assert !xor(isnothing(default_char), isnothing(default_index)) """\
             Got `default_char=$(default_char)` and `default_index=$(default_index)`.
             These should either both be `nothing`, or both something.
+            This error can happen if the proposed `default_char` is not in the alphabet.
             """
         @assert isnothing(default_char) || in(default_char, characters) """\
             Default char $(default_char) not found in alphabet characters $(string)
@@ -221,11 +226,14 @@ const binary_alphabet_names = (:binary, :spin)
 
 function Alphabet(name::Symbol, ::Type{T}=Int) where T <: Integer
     return if name in aa_alphabet_names
-        Alphabet(_DEFAULT_AA_ALPHABET_STRING, T; default_char = '-')
+        # Alphabet(_DEFAULT_AA_ALPHABET_STRING, T; default_char = '-')
+        convert(Alphabet{Char, T}, aa_alphabet)
     elseif name in nt_alphabet_names
-        Alphabet(_DEFAULT_NT_ALPHABET_STRING, T; default_char = '-')
+        # Alphabet(_DEFAULT_NT_ALPHABET_STRING, T; default_char = '-')
+        convert(Alphabet{Char, T}, nt_alphabet)
     elseif name in binary_alphabet_names
-        Alphabet(_DEFAULT_BINARY_ALPHABET_STRING, T)
+        # Alphabet(_DEFAULT_BINARY_ALPHABET_STRING, T)
+        convert(Alphabet{Char, T}, binary_alphabet)
     else
         names = vcat(aa_alphabet_names..., nt_alphabet_names..., binary_alphabet_names...)
         error("Unrecognized alphabet name $name - Possible names $names")
@@ -244,19 +252,16 @@ end
 """
 function default_alphabet(q::Integer, ::Type{T}=Int) where T <: Integer
     @assert q > 0 "`q` must be strictly positive - got $q"
-
-    return if q == 21
-        Alphabet(:aa, T)
-    elseif q == 5
-        Alphabet(:dna, T)
+    return if q == 2
+        Alphabet(:binary, T)
     elseif q == 4
         Alphabet(_DEFAULT_NT_ALPHABET_STRING_NOGAP, T)
-    elseif q == 2
-        Alphabet(:binary, T)
-    elseif q < 21
-        Alphabet(_DEFAULT_AA_ALPHABET_STRING[1:q], T)
+    elseif q == 5
+        Alphabet(:dna, T)
+    elseif 5 < q <= 21
+        Alphabet(:aa, T)
     else
-        error("No defined default alphabet for q = $q > 21 - provide your own or use `nothing`")
+        error("No defined default alphabet for q = $q (<2 or > 21) - provide your own or use `nothing`")
     end
 end
 
@@ -283,7 +288,7 @@ end
 function (alphabet::Alphabet)(x::Integer)
     c = get(alphabet.index_to_char, x, alphabet.default_char)
     if isnothing(c)
-        error("$x is not in alphabet symbols, and no defaults set.")
+        error("$x is not in alphabet range, and no defaults set.")
     end
     return c
 end

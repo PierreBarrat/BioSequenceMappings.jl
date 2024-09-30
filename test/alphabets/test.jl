@@ -141,8 +141,9 @@ end
     @test default_alphabet(4).characters == collect(BSM._DEFAULT_NT_ALPHABET_STRING_NOGAP)
     @test default_alphabet(21).characters == collect(BSM._DEFAULT_AA_ALPHABET_STRING)
     @test default_alphabet(5).characters == collect(BSM._DEFAULT_NT_ALPHABET_STRING)
-    @test default_alphabet(14).characters == collect(BSM._DEFAULT_AA_ALPHABET_STRING[1:14])
+    @test default_alphabet(14).characters == collect(BSM._DEFAULT_AA_ALPHABET_STRING)
     @test_throws ErrorException default_alphabet(22)
+    @test_throws ErrorException default_alphabet(1)
 end
 
 @testset "Sequence to int" begin
@@ -160,11 +161,10 @@ end
         X == [5,4,3,2] && typeof(X) == Vector{Int8}
     end
 
-    @test begin
+    @test_throws ErrorException begin
         s = "-TGCAB"
         alphabet = Alphabet(:dna, Int8)
-        X = alphabet(s)
-        X == [1,5,4,3,2,1] && typeof(X) == Vector{Int8}
+        alphabet(s)
     end
 
     @test begin
