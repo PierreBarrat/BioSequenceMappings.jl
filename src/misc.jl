@@ -31,35 +31,37 @@ end
 
 
 """
-    pairwise_hamming(X, Y; step=1, step_left, step_right)
+    pairwise_hamming(X, Y; step=1, step_left, step_right, as_vec=true, kwargs...)
+    pairwise_hamming(X; kwargs...)
 
-Return matrix of all hamming distances between sequences of `X` and `Y`.
+Return all hamming distances between sequences of `X` and `Y`.
+In the second form, consider pairs of sequences in `X`.
+
 Only consider sequences every `step`.
-`step_left` and `step_right` can be used to skip sequence either in `X` or in `Y`:
+`step_left` and `step_right` can be used to skip sequence either in `X` or in `Y`.
+This is useful for large alignment, as the number of computations grows with the product
+    of the size of the alignments
+
+By default, the return value is a vector organized like
+`[H(1,2), H(1,3), ..., H(M-1, M)]` with `H` standing for hamming distance and `M` for the
+number of sequences.
+If a matrix is prefered, use `as_vec=false`
+
+Extra keyword arguments are passed to `hamming`.
 """
 function pairwise_hamming(
-    X::Alignment, Y::Alignment; step=1, step_left=step, step_right=step, normalize=true,
+    X::AbstractAlignment, Y::AbstractAlignment;
+    step=1, step_left=step, step_right=step, as_vec=true, kwargs...
 )
     if Alphabet(X) != Alphabet(Y)
         @warn """Alignments do not have the same alphabet. Are you sure?
             Left aln: $(Alphabet(X))
-            Right aln: $(Alphabet(X))
+            Right aln: $(Alphabet(Y))
         """
     end
     X_sequences = eachsequence(X; skip = step_left)
     Y_sequences = eachsequence(Y; skip = step_right)
-    return [hamming(x, y; normalize) for x in X_sequences, y in Y_sequences]
-end
-
-"""
-    pairwise_hamming(X; step, as_vec=true)
-
-Vector of pairwise hamming distances of sequences in `X`, ordered as
-`[H(1,2), H(1,3), ..., H(M-1, M)]` with `H` standing for hamming distance.
-If `as_vec=false`, will return a `Matrix` instead.
-"""
-function pairwise_hamming(X::Alignment; step=1, normalize=true, as_vec = true)
-    D = pairwise_hamming(X, X; step, normalize)
+    D = [hamming(x, y; kwargs...) for x in X_sequences, y in Y_sequences]
     return if as_vec
         M = size(D, 1)
         [D[i,j] for i in 1:M for j in (i+1):M]
@@ -67,3 +69,4 @@ function pairwise_hamming(X::Alignment; step=1, normalize=true, as_vec = true)
         D
     end
 end
+pairwise_hamming(X::AbstractAlignment; kwargs...) = pairwise_hamming(X, X; kwargs...)
