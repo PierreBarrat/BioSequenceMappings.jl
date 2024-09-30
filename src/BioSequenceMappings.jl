@@ -21,7 +21,7 @@ export eachsequence, sequence_length, sequence_number, subsample, subsample_rand
 export find_sequence, match_sequences, named_sequences
 
 include("weights.jl")
-export compute_weights
+export compute_weights, compute_weights!
 
 include("IO.jl")
 export read_fasta
