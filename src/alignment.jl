@@ -237,8 +237,18 @@ end
 ############# Iterating / Indexing #############
 ################################################
 
+"""
+    size(A::AbstractAlignment)
+
+Return a tuple with (in order) the length and the number of sequences.
+"""
 Base.size(aln::AbstractAlignment) = size(aln.data)
 Base.size(aln::AbstractAlignment, dim) = size(aln.data, dim)
+"""
+    length(A::AbstractAlignment)
+
+Return the number of sequences in `A`.
+"""
 Base.length(aln::AbstractAlignment) = size(aln.data, ndims(aln.data))
 
 Base.iterate(X::AbstractAlignment) = iterate(eachslice(X.data, dims=ndims(X.data)))
@@ -270,12 +280,16 @@ end
 
 Return an iterator of the form `(name, sequence)` over `X`.
 """
+function named_sequences(X::AbstractAlignment, indices)
+    return zip(X.names[indices], eachsequence(X, indices))
+end
 function named_sequences(X::AbstractAlignment; skip::Integer = 1)
     @assert skip > 0 "`skip` kwarg must be positive - instead $skip"
     return if skip == 1
         zip(X.names, eachslice(X.data, dims=ndims(X.data)))
     else
-        zip(X.names[1:skip:size(X.data)[end]], eachsequence(X, 1:skip:size(X.data)[end]))
+        indices = 1:skip:size(X.data)[end]
+        zip(X.names[indices], eachsequence(X, indices))
     end
 end
 
@@ -304,8 +318,6 @@ subsample(X::AbstractAlignment, i::Int) = subsample(X, i:i)
 function subsample(X::AbstractAlignment, indices)
     data_copy = copy(X[indices])
     Y = Alignment(data_copy, copy(X.alphabet))
-    # Y = copy(X)
-    # Y.data = data_copy
     Y.weights = X.weights[indices] / sum(X.weights[indices])
     Y.names = X.names[indices]
     return Y
@@ -346,7 +358,7 @@ Sequences are returned as columns.
 """
 function match_sequences(pattern, aln::AbstractAlignment)
     idx = findall(x -> occursin(pattern, x), aln.names)
-    return idx, aln[idx]
+    return idx, eachsequence(aln, idx)
 end
 
 
