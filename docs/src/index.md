@@ -12,9 +12,9 @@ It also provides simple function to manipulate alignments or to compute simple s
 ## Installation
 
 From the Julia REPL: 
-```@example
+```@repl
 using Pkg
-Pkg.add("BioSequenceMappings")
+Pkg.add("https://github.com/PierreBarrat/BioSequenceMappings.jl")
 using BioSequenceMappings
 ```
 
