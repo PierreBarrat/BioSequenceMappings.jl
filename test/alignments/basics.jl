@@ -24,7 +24,7 @@
     end
 end
 
-@testset "Constructors with alphabet" begin
+@testset "Constructors with explicit alphabet" begin
     data = Matrix{Int16}([1 2 3; 2 3 4])
     @testset "Basic" begin
         alphabet = Alphabet("ACGT", Int16)
@@ -33,7 +33,7 @@ end
         @test Alphabet(alignment) == alphabet
     end
 
-    @testset "Mismatched types" begin
+    @testset "Mismatched types - Alphabet gets priority" begin
         alphabet = Alphabet("ACGT", Int8)
         alignment = Alignment(data, alphabet)
         @test typeof(alignment) == Alignment{Char, Int8}
@@ -61,6 +61,46 @@ end
         @test typeof(alignment) == Alignment{Char, Int}
         @test size(alignment) == (2, 3) # three sequences of length 2
         @test Alphabet(alignment) == Alphabet(:dna, Int)
+    end
+
+    @testset "From vector of integers" begin
+        sequence = Int16[1,2,3,4,5]
+        alignment = Alignment(sequence, :dna)
+        @test typeof(alignment) == Alignment{Char, Int16}
+        @test size(alignment) == (5, 1)
+        @test Alphabet(alignment) == Alphabet(:dna, Int16)
+    end
+end
+
+@testset "Constructor with keyword alphabet" begin
+    data = Matrix{Int}([1 2 3; 2 3 4])
+
+    @testset "Explicit alphabet" begin
+        alphabet = Alphabet("ACGT", Int)
+        alignment = Alignment(data; alphabet)
+        @test typeof(alignment) == Alignment{Char, Int}
+        @test Alphabet(alignment) == alphabet
+    end
+
+    @testset "Symbol" begin
+        alignment = Alignment(data; alphabet=:dna)
+        @test Alphabet(alignment) == Alphabet(:dna)
+    end
+
+    @testset "Vector of vector data" begin
+        data = [[1,2], [3,4]]
+        alignment = Alignment(data; alphabet = :dna)
+        @test size(alignment) == (2,2)
+        @test alignment[1] == [1,2]
+        @test Alphabet(alignment) == Alphabet(:dna)
+    end
+
+    @testset "Vector of integers data" begin
+        data = [3,4]
+        alignment = Alignment(data; alphabet = :dna)
+        @test size(alignment) == (2,1)
+        @test alignment[1] == [3,4]
+        @test Alphabet(alignment) == Alphabet(:dna)
     end
 end
 

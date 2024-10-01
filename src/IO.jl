@@ -10,10 +10,10 @@ function read_fasta(fastafile::AbstractString; alphabet = :auto, kwargs...)
 end
 
 function read_fasta(fastafile::AbstractString, alphabet::Symbol; kwargs...)
-    if alphabet == :auto
+    alphabet = if alphabet == :auto
         alphabet = auto_alphabet_from_fasta(fastafile)
     else
-        error("`alphabet` must be `:auto` or an `Alphabet` object")
+        Alphabet(alphabet)
     end
     return read_fasta(fastafile, alphabet; kwargs...)
 end

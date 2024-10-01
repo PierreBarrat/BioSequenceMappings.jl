@@ -235,7 +235,9 @@ function Alphabet(name::Symbol, ::Type{T}=Int) where T <: Integer
         # Alphabet(_DEFAULT_BINARY_ALPHABET_STRING, T)
         convert(Alphabet{Char, T}, binary_alphabet)
     else
-        names = vcat(aa_alphabet_names..., nt_alphabet_names..., binary_alphabet_names...)
+        names = convert(
+            Vector{Any}, vcat(aa_alphabet_names, nt_alphabet_names, binary_alphabet_names)
+        )
         error("Unrecognized alphabet name $name - Possible names $names")
     end
 end

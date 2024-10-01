@@ -105,6 +105,10 @@ Different options for alphabet
     The constructor `Alphabet` will be called like so: `Alphabet(alphabet)`.
 
 If the types of `alphabet` and `data` mismatch, `data` is converted.
+
+`data` can also have the following shape:
+- vector of integer vectors, *e.g.* [[1,2], [3,4]]: each element is considered as a sequence
+- vector of integers: single sequence alignment
 """
 function Alignment(data::AbstractMatrix{T}, alphabet::Alphabet{A,T}; kwargs...) where {A,T}
     return Alignment{A,T}(;data, alphabet, kwargs...)
@@ -124,7 +128,7 @@ function Alignment(data::AbstractVector{<:AbstractVector{T}}, alphabet; kwargs..
     return Alignment(reduce(hcat, data), alphabet; kwargs...)
 end
 
-function Alignment(data::AbstractVector{T}, alphabet::Alphabet{A,T}; kwargs...) where {A,T}
+function Alignment(data::AbstractVector{T}, alphabet; kwargs...) where T<:Integer
     return Alignment(reshape(data, length(data), 1), alphabet; kwargs...)
 end
 
@@ -143,9 +147,15 @@ function Alignment(
     elseif isnothing(alphabet) || in(alphabet, (:none, :no))
         nothing
     else
-        alphabet(alphabet, T)
+        Alphabet(alphabet, T)
     end
     return Alignment(data, A; kwargs...)
+end
+function Alignment(data::AbstractVector{<:AbstractVector}; kwargs...)
+    return Alignment(reduce(hcat, data); kwargs...)
+end
+function Alignment(data::AbstractVector{<:Integer}; kwargs...)
+    return Alignment(reshape(data, length(data), 1); kwargs...)
 end
 
 ################################################
