@@ -40,11 +40,12 @@ of `data`. They do not have to be unique, and can be ignored
     data::Matrix{T}
     alphabet::Union{Nothing, Alphabet{A,T}}
     weights::Vector{Float64} = ones(size(data, 2))/size(data, 2) # phylogenetic weights of sequences
+    Meff::Float64 = size(data, 2)
     names::Vector{String} = fill("", size(data, 2))
-    function Alignment{A,T}(data, alphabet, weights, ::Nothing) where {A, T}
-        return Alignment{A,T}(data, alphabet, weights, fill("", size(data, 2)))
+    function Alignment{A,T}(data, alphabet, weights, Meff, ::Nothing) where {A, T}
+        return Alignment{A,T}(data, alphabet, weights, Meff, fill("", size(data, 2)))
     end
-    function Alignment{A,T}(data, alphabet, weights, names) where {A,T}
+    function Alignment{A,T}(data, alphabet, weights, Meff, names) where {A,T}
         @assert length(names) == length(weights) == size(data, 2) """\
             Inconsistent sizes between `data`, `weight` and `names` \
             - got $(size(data,2)), $(length(weights)), $(length(names))
@@ -62,9 +63,10 @@ of `data`. They do not have to be unique, and can be ignored
         @assert isapprox(sum(weights), 1; rtol = 1e-8) """
             Weights must sum to 1 - got $(sum(weights))
             """
+        @assert Meff <= size(data, 2) "Effective M larger than number of sequences $(Meff) > $(size(data,2))"
 
         alphabet_copy = isnothing(alphabet) ? nothing : copy(alphabet)
-        return new{A,T}(Matrix(data), alphabet_copy, copy(weights), string.(names))
+        return new{A,T}(Matrix(data), alphabet_copy, copy(weights), Meff, string.(names))
     end
 end
 

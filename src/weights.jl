@@ -28,6 +28,7 @@ Compute and set weights for `X`. See `compute_weights`.
 function compute_weights!(X, θ = 0.2; kwargs...)
     w, Meff = compute_weights(X, θ; kwargs...)
     X.weights = w
+    X.Meff = Meff
     return w, Meff
 end
 
