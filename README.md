@@ -4,9 +4,11 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://PierreBarrat.github.io/BioSequenceMappings.jl/dev/)
 
 The aim of the package is to facilitate the task of converting biological sequences (nucleotides, amino acids) to integers or to onehot representation. 
-It also provides simple function to manipulate alignments or to compute simple statistics. 
+It also provides simple functions to manipulate alignments or to compute simple statistics. 
 
 *Note*: I do not frequently use the onehot format, so for now it is not documented / not well tested. I'll develop it more when I get the time. 
+
+*Note*: The package is not aimed at being highly computationally efficient when dealing with sequences. The purpose is simply to help interfacing with other algorithms (I have DCA-like models in mind). If you are dealing with very large alignments and very large sequences, it is possible that this does not fit your needs. 
 
 ## Installation
 
