@@ -70,17 +70,17 @@ julia> A |> symbols |> prod # as a string
 ## Default alphabets
 
 The package comes with three default alphabets: 
-- an amino-acid alphabet `aa_alphabet` using the mapping `"-ACDEFGHIKLMNPQRSTVWY"`;
-- a nucleotide alphabet `nt_alphabet` using the mapping `"-ACGT"`;
-- a "binary" alphabet `BioSequenceMappings.binary_alphabet`, which I found useful for simulations, with the mapping: `"01"`. 
+- an amino-acid alphabet `Alphabet(:aa)` using the mapping `"-ACDEFGHIKLMNPQRSTVWY"`;
+- a nucleotide alphabet `Alphabet(:dna)` using the mapping `"-ACGT"`;
+- a "binary" alphabet `Alphabet(:binary)`, which I found useful for simulations, with the mapping: `"01"`. 
 
-These can be also be accessed by calling `Alphabet(name)` where `name` is a symbol corresponding to any of the default alphabets. 
+They can be accessed by calling `Alphabet(name)` where `name` is a symbol corresponding to any of the default alphabets. 
 The symbolic names can be easily be found:
 ```jldoctest alpha2
 julia> BioSequenceMappings.aa_alphabet_names # also works with nt and binary alphabets
 (:aa, :AA, :aminoacids, :amino_acids)
 
-julia> Alphabet(:aa) == aa_alphabet
+julia> Alphabet(:aa) == Alphabet("-ACDEFGHIKLMNPQRSTVWY")
 true
 
 julia> Alphabet(:amino_acids)([1,2,3])
@@ -137,6 +137,8 @@ It often happens to me that I have an integer vector `X` representing a sequence
 The [`translate`](@ref) function lets me convert it to another integer vector with the right mapping. 
 ```jldoctest alpha2
 julia> strange_alphabet = Alphabet("TCGA-"); # the default is "-ACGT"
+
+julia> nt_alphabet = Alphabet(:dna); # the default for nucleotides
 
 julia> X = Int[2, 2, 5, 4, 5]; # representing the sequence "CC-A-" according to the above
 

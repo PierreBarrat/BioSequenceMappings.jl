@@ -42,7 +42,7 @@ Load an alignment, find columns with more than 5% gaps and remove them, then cre
 
 ```@repl example_2
 using BioSequenceMappings # hide
-A = read_fasta("../../example/PF00014.fasta"); # uses the default alphabet `aa_alphabet`
+A = read_fasta("../../example/PF00014.fasta"); # uses the default alphabet `Alphabet(:aa)`
 gap_digit = A.alphabet('-') 
 f1 = site_specific_frequencies(A)
 non_gapped_colums = findall(j -> f1[gap_digit, j] <= 0.05, 1:size(f1, 2))' # transpose for legibility

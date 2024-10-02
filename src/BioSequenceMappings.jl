@@ -14,7 +14,6 @@ import Base: write
 include("alphabet.jl")
 export Alphabet
 export default_alphabet, symbols, translate
-export aa_alphabet, nt_alphabet
 
 include("alignment.jl")
 export Alignment, AbstractAlignment

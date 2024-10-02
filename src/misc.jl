@@ -23,7 +23,6 @@ function hamming(
     return normalize ? H / Z : H
 end
 
-
 function hamming(X::Alignment, i::Integer, Y::Alignment, j::Integer)
     @warn "Not implemented yet"
     return nothing

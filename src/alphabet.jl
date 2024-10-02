@@ -215,25 +215,25 @@ const _DEFAULT_BINARY_ALPHABET_STRING = "01"
 
 const _DEFAULT_ALPHABET_STRING = _DEFAULT_AA_ALPHABET_STRING
 
-const aa_alphabet = Alphabet(_DEFAULT_AA_ALPHABET_STRING)
+const _aa_alphabet = Alphabet(_DEFAULT_AA_ALPHABET_STRING)
 const aa_alphabet_names = (:aa, :AA, :aminoacids, :amino_acids)
 
-const nt_alphabet = Alphabet(_DEFAULT_NT_ALPHABET_STRING)
+const _nt_alphabet = Alphabet(_DEFAULT_NT_ALPHABET_STRING)
 const nt_alphabet_names = (:nt, :nucleotide, :dna)
 
-const binary_alphabet = Alphabet(_DEFAULT_BINARY_ALPHABET_STRING)
+const _binary_alphabet = Alphabet(_DEFAULT_BINARY_ALPHABET_STRING)
 const binary_alphabet_names = (:binary, :spin)
 
 function Alphabet(name::Symbol, ::Type{T}=Int) where T <: Integer
     return if name in aa_alphabet_names
         # Alphabet(_DEFAULT_AA_ALPHABET_STRING, T; default_char = '-')
-        convert(Alphabet{Char, T}, aa_alphabet)
+        convert(Alphabet{Char, T}, _aa_alphabet)
     elseif name in nt_alphabet_names
         # Alphabet(_DEFAULT_NT_ALPHABET_STRING, T; default_char = '-')
-        convert(Alphabet{Char, T}, nt_alphabet)
+        convert(Alphabet{Char, T}, _nt_alphabet)
     elseif name in binary_alphabet_names
         # Alphabet(_DEFAULT_BINARY_ALPHABET_STRING, T)
-        convert(Alphabet{Char, T}, binary_alphabet)
+        convert(Alphabet{Char, T}, _binary_alphabet)
     else
         names = convert(
             Vector{Any}, vcat(aa_alphabet_names, nt_alphabet_names, binary_alphabet_names)
