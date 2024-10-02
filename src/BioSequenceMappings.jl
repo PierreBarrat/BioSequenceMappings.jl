@@ -7,8 +7,8 @@ using Random
 import Base: length, size
 import Base: in, ==, hash, convert, copy
 import Base: getindex, firstindex, lastindex, eachindex, view, keys
-import Base: iterate, eltype
-import Base: unique
+import Base: iterate, eltype, unique
+import Base: cat
 import Base: write
 
 include("alphabet.jl")

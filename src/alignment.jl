@@ -371,10 +371,30 @@ function match_sequences(pattern, aln::AbstractAlignment)
     return idx, eachsequence(aln, idx)
 end
 
+#=============================================#
+################ Concatenating ################
+#=============================================#
 
-################################################
-##################### Misc #####################
-################################################
+function Base.cat(A::Alignment, B::Alignment, C::Vararg{<:Alignment})
+    if !allequal(x -> x.alphabet, (A, B, C...))
+        error("All alignments must share the same alphabet")
+    end
+    if !allequal(x -> size(x, 1), (A, B, C...))
+        error("All alignments must have the same length")
+    end
+
+    data = hcat(A.data, B.data, map(x -> x.data, C)...)
+    names = vcat(A.names, B.names, map(x -> x.names, C)...)
+    weights = vcat(A.weights, B.weights, map(x -> x.weights, C)...)
+    weights = weights / sum(weights)
+    return Alignment(data, A.alphabet; names, weights)
+end
+
+
+#==================#
+####### Misc #######
+#==================#
+
 
 Alphabet(A::AbstractAlignment) = A.alphabet
 
