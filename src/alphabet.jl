@@ -245,18 +245,17 @@ end
 """
     default_alphabet(q::Int, T::Type)
 
-- if `q==21`, amino acids
-- if `q==5`, nucleotides
-- if `q==4`, nucleotides without gaps
 - if `q==2`, binary (0, 1)
-- else, if `q<21`, return the restriction of amino acids to the first q sites
+- if `3 <= q <= 4`, nucleotides without gaps
+- if `q==5`, nucleotides
+- if `5 < q <= 21`, amino acids
 - if `q>21`, fails
 """
 function default_alphabet(q::Integer, ::Type{T}=Int) where T <: Integer
     @assert q > 0 "`q` must be strictly positive - got $q"
     return if q == 2
         Alphabet(:binary, T)
-    elseif q == 4
+    elseif 3 <= q <= 4
         Alphabet(_DEFAULT_NT_ALPHABET_STRING_NOGAP, T)
     elseif q == 5
         Alphabet(:dna, T)
