@@ -10,22 +10,19 @@ function hamming(
 )
     @assert length(X) == length(Y) """Expect vectors of same length.
         Instead $(length(X)) != $(length(Y))"""
-    H = if isnothing(positions)
-        sum(zip(X, Y)) do (x,y)
-            x != y
-        end
-    else
-        sum(positions) do i
-            X[i] != Y[i]
-        end
+
+    positions = isnothing(positions) ? (1:length(X)) : positions
+    H = 0
+    Z = 0
+    for i in positions
+        Z += 1
+        (X[i] != Y[i]) && (H += 1)
     end
-    Z = (isnothing(positions) ? length(X) : length(positions))
-    return normalize ? H / Z : H
+    return normalize ? H/Z : H
 end
 
 function hamming(X::Alignment, i::Integer, Y::Alignment, j::Integer)
-    @warn "Not implemented yet"
-    return nothing
+    error("Not implemented yet")
 end
 
 
