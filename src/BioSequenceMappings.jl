@@ -7,7 +7,7 @@ using Random
 import Base: length, size
 import Base: in, ==, hash, convert, copy
 import Base: getindex, firstindex, lastindex, eachindex, view, keys
-import Base: iterate, eltype, unique
+import Base: iterate, eltype, unique, filter
 import Base: cat
 import Base: write
 

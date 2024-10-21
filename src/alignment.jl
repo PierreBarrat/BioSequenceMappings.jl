@@ -63,7 +63,11 @@ of `data`. They do not have to be unique, and can be ignored
         @assert isapprox(sum(weights), 1; rtol = 1e-8) """
             Weights must sum to 1 - got $(sum(weights))
             """
-        @assert Meff <= size(data, 2) "Effective M larger than number of sequences $(Meff) > $(size(data,2))"
+        if Meff - size(data, 2) > 1e-6
+            error("Effective M larger than number of sequences $(Meff) > $(size(data,2))")
+        elseif Meff - size(data, 2) > 0
+            Meff = round(Int, Meff)
+        end
 
         alphabet_copy = isnothing(alphabet) ? nothing : copy(alphabet)
         return new{A,T}(Matrix(data), alphabet_copy, copy(weights), Meff, string.(names))
@@ -331,6 +335,7 @@ function subsample(X::AbstractAlignment, indices)
     data_copy = copy(X[indices])
     Y = Alignment(data_copy, copy(X.alphabet))
     Y.weights = X.weights[indices] / sum(X.weights[indices])
+    Y.Meff = sum(X.weights[indices]) * X.Meff
     Y.names = X.names[indices]
     return Y
 end
@@ -353,6 +358,7 @@ end
 
 Find sequence with name `label` in `aln`, and return `(index, sequence)`.
 Scales as the number of sequences.
+Return the first sequence that matches the label.
 
 !!! Return a *view* of the sequence.
 """
@@ -371,6 +377,24 @@ Sequences are returned as columns.
 function match_sequences(pattern, aln::AbstractAlignment)
     idx = findall(x -> occursin(pattern, x), aln.names)
     return idx, eachsequence(aln, idx)
+end
+
+"""
+    filter(f, aln::AbstractAlignment)
+
+Filter sequences of `aln` using boolean function `f`. Return another `Alignment`.
+Use `filter(f, eachsequence(aln))` to obtain an array of sequences.
+"""
+function filter(f, aln::A) where A <: AbstractAlignment
+    idx = findall(f, eachsequence(aln))
+
+    return A(
+        data = copy(aln.data[:, idx]),
+        alphabet = aln.alphabet,
+        names = aln.names[idx],
+        weights = aln.weights[idx] / sum(aln.weights[idx]),
+        Meff = sum(aln.weights[idx])*aln.Meff,
+    )
 end
 
 #=============================================#
