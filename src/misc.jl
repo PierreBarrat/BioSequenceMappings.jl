@@ -65,4 +65,19 @@ function pairwise_hamming(
         D
     end
 end
-pairwise_hamming(X::AbstractAlignment; kwargs...) = pairwise_hamming(X, X; kwargs...)
+function pairwise_hamming(X::AbstractAlignment; step=1, kwargs...)
+    n = 0
+    M = size(X, 2)
+    for i in 1:step:M, j in (i+1):step:M
+        n += 1
+    end
+
+    H = zeros(Float64, n)
+    n = 1
+    for i in 1:step:M, j in (i+1):step:M
+        H[n] = hamming(X[i], X[j]; kwargs...)
+        n += 1
+    end
+
+    return H
+end
