@@ -14,7 +14,7 @@ It also provides simple function to manipulate alignments or to compute simple s
 From the Julia REPL: 
 ```@repl
 using Pkg
-Pkg.add("https://github.com/PierreBarrat/BioSequenceMappings.jl")
+Pkg.add("BioSequenceMappings")
 using BioSequenceMappings
 ```
 
