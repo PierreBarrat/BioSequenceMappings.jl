@@ -1,7 +1,10 @@
 using BioSequenceMappings
 using Documenter
 
-DocMeta.setdocmeta!(BioSequenceMappings, :DocTestSetup, :(using BioSequenceMappings); recursive=true)
+DocMeta.setdocmeta!(
+    BioSequenceMappings, :DocTestSetup, :(using BioSequenceMappings)
+    ; recursive=true
+)
 
 makedocs(;
     modules=[BioSequenceMappings],

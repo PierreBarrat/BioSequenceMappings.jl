@@ -1,5 +1,6 @@
 module BioSequenceMappings
 
+using ArgCheck
 using FASTX
 using OneHotArrays
 using Random
@@ -7,7 +8,7 @@ using Random
 import Base: length, size
 import Base: in, ==, hash, convert, copy
 import Base: getindex, firstindex, lastindex, eachindex, view, keys
-import Base: iterate, eltype, unique, filter
+import Base: iterate, eltype, unique, filter, sort, sort!
 import Base: cat
 import Base: write
 

@@ -416,6 +416,41 @@ function Base.cat(A::Alignment, B::Alignment, C::Vararg{<:Alignment})
     return Alignment(data, A.alphabet; names, weights)
 end
 
+#===========================#
+########## Sorting ##########
+#===========================#
+"""
+    sort!(aln::AbstractAlignment; kwargs...)
+
+Sort `aln` in place.
+The permutation is obtained by calling `sortperm(aln.names; kwargs...)`.
+"""
+function Base.sort!(aln::AbstractAlignment; with_name=true, with_seq=false, kwargs...)
+    @argcheck with_name || with_seq """
+    Expect either `with_name` or `with_seq`, but not both. Instead $with_name - $with_name.
+    """
+    return if with_name
+        sort_by_name!(aln; kwargs...)
+    else
+        error("Not yet implemented - use `with_name=true` and `with_seq=false`.")
+        # sort_by_seq!(aln; kwargs...)
+    end
+end
+
+function sort_by_name!(aln; kwargs...)
+    p = sortperm(aln.names; kwargs...)
+    aln.data = aln.data[:, p]
+    aln.names = aln.names[p]
+    aln.weights = aln.weights[p]
+    return aln
+end
+
+"""
+    sort(aln::AbstractAlignment; kwargs...)
+
+Copy `aln` and call `sort!`.
+"""
+Base.sort(aln::AbstractAlignment; kwargs...) = sort!(copy(aln); kwargs...)
 
 #==================#
 ####### Misc #######

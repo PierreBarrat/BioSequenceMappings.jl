@@ -132,6 +132,34 @@ subsample_random(A, 12) # sampling without replacement: this will error since si
 rand(A) # one random sequence from A (returns a view)
 ```
 
+## Misc.
+
+Sorting / concatenating alignments.
+```jldoctest align2
+julia> n = A.names # Sorting an alignment
+5-element Vector{String}:
+ "sequence_1"
+ "sequence_2"
+ "sequence_3"
+ "sequence_4"
+ "sequence_5"
+
+julia> B = sort(A; with_name=true, rev=true); # could also use `by=...`
+
+julia> B.names
+5-element Vector{String}:
+ "sequence_5"
+ "sequence_4"
+ "sequence_3"
+ "sequence_2"
+ "sequence_1"
+
+julia> C = cat(A, B); # concatenate two alignments
+
+julia> size(C) # 10 sequences of length 10
+(10, 10)
+```
+
 ## OneHotAlignment
 
 TBA
