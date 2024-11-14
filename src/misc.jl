@@ -37,7 +37,7 @@ end
 
 """
     pairwise_hamming(X, Y; step=1, step_left, step_right, as_vec=true, kwargs...)
-    pairwise_hamming(X; kwargs...)
+    pairwise_hamming(X; as_vec, step, kwargs...)
 
 Return all hamming distances between sequences of `X` and `Y`.
 In the second form, consider pairs of sequences in `X`.
@@ -74,19 +74,27 @@ function pairwise_hamming(
         D
     end
 end
-function pairwise_hamming(X::AbstractAlignment; step=1, kwargs...)
+function pairwise_hamming(X::AbstractAlignment; as_vec=true, step=1, kwargs...)
     n = 0
     M = size(X, 2)
     for i in 1:step:M, j in (i+1):step:M
         n += 1
     end
 
-    H = zeros(Float64, n)
-    n = 1
-    for i in 1:step:M, j in (i+1):step:M
-        H[n] = hamming(X[i], X[j]; kwargs...)
-        n += 1
+    if as_vec
+        H = zeros(Float64, n)
+        n = 1
+        for i in 1:step:M, j in (i+1):step:M
+            H[n] = hamming(X[i], X[j]; kwargs...)
+            n += 1
+        end
+        return H
+    else
+        H = zeros(Float64, M, M)
+        for i in 1:step:M, j in (i+1):step:M
+            H[j,i] = hamming(X[i], X[j]; kwargs...)
+            H[i,j] = H[j,i]
+        end
+        return H
     end
-
-    return H
 end
