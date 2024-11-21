@@ -341,6 +341,16 @@ function subsample(X::AbstractAlignment, indices)
 end
 
 """
+    subsample(X::AbstractAlignment, labels::AbstractVector{<:AbstractString})
+
+Return an `Alignment` containing only sequences whose name is in `labels`.
+"""
+function subsample(X::AbstractAlignment, labels::AbstractVector{<:AbstractString})
+    indices = findall(x -> x in labels, X.names)
+    return subsample(X, indices)
+end
+
+"""
     subsample_random(X::AbstractAlignment, m::Int)
 
 Return an `Alignment` with `m` sequences taking randomly from `X`.
