@@ -65,6 +65,11 @@ function auto_alphabet_from_sequences(sequences::AbstractVector{<:AbstractString
     end
 end
 
+"""
+    write(io, A::Alignment)
+
+Write `A` in fasta format.
+"""
 function Base.write(file::AbstractString, X::Alignment)
     return open(file, "w") do io
         write(io, X)

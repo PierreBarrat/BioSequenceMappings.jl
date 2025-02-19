@@ -1,7 +1,11 @@
 function f1(A::AbstractAlignment, w::AbstractVector{Float64})
     @assert sum(w) ≈ 1 "Weights must sum to 1 - Instead $(sum(w))"
     L, M = size(A)
-    q = length(Alphabet(A))
+    q = if isnothing(Alphabet(A))
+        maximum(A.data)
+    else
+        length(Alphabet(A))
+    end
     X = A.data' # M x L - for faster iteration
 
     f = zeros(Float64, q, L)
@@ -47,7 +51,7 @@ end
 function f2(A::AbstractAlignment, w::AbstractVector)
     @assert sum(w) ≈ 1 "Weights must sum to 1 - Instead $(sum(w))"
     L, M = size(A)
-    q = length(Alphabet(A))
+    q = isnothing(Alphabet(A)) ? maximum(A.data) : length(Alphabet(A))
     X = A.data'
 
     f = zeros(Float64, q, q, L, L)
