@@ -6,7 +6,7 @@ Only sites in vector `positions` will be considered.
 """
 function hamming(
     X::AbstractVector{<:Integer}, Y::AbstractVector{<:Integer};
-    normalize=true, positions = nothing, exclude_state = nothing,
+    normalize=true, positions=nothing, exclude_state=nothing,
 )
     @assert length(X) == length(Y) """Expect vectors of same length.
         Instead $(length(X)) != $(length(Y))"""

@@ -325,6 +325,7 @@ function translate(X::AbstractVector{<:Integer}, A::Alphabet, B::Alphabet)
     return map(x -> translate(x, A, B), X)
 end
 
+
 ################################################
 ##################### Misc #####################
 ################################################
