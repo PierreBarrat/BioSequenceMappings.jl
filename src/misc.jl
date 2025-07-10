@@ -68,8 +68,8 @@ function pairwise_hamming(
     Y_sequences = eachsequence(Y; skip = step_right)
     D = [hamming(x, y; kwargs...) for x in X_sequences, y in Y_sequences]
     return if as_vec
-        M = size(D, 1)
-        [D[i,j] for i in 1:M for j in (i+1):M]
+        M, N = size(D)
+        [D[i,j] for i in 1:M for j in 1:N]
     else
         D
     end
