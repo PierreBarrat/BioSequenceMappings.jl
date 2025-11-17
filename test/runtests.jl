@@ -19,3 +19,5 @@ here = dirname(@__FILE__)
         include(joinpath(here, "./io/test.jl"))
     end
 end
+
+include("Aqua.jl")
