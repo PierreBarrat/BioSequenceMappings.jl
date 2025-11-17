@@ -3,6 +3,7 @@ module BioSequenceMappings
 using ArgCheck
 using FASTX
 using OneHotArrays
+using ProgressMeter
 using Random
 
 import Base: length, size

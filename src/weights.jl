@@ -40,7 +40,7 @@ function compute_weights(
     threshold = Int(floor(L * theta))
     weights = ones(Int, M);
     d = 0
-    @inbounds for m in 1:M, l in (m+1):M
+    @inbounds @showprogress for m in 1:M, l in (m+1):M
         d = 0 # distance
         i = 1 # index in sequence
         while d < threshold && i <= L
