@@ -14,7 +14,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 ArgCheck = "2.3.0"
 FASTX = "2.1"
 OneHotArrays = "0.2"
-ProgressMeter = "1.11.0"
+ProgressMeter = "1.10.4"
 
 Random = "<0.0.1, 1"
 Test = "<0.0.1, 1"
