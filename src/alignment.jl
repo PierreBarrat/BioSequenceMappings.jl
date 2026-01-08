@@ -187,7 +187,7 @@ function Base.copy(X::Alignment{A,T}) where {A,T}
     )
 end
 
-Base.convert(::Type{T}, X::Alignment{A,T}) where {A,T} = X
+Base.convert(::Type{T}, X::Alignment{A,T}) where {A,T<:Integer} = X
 Base.convert(::Type{Alignment{A,T}}, X::Alignment{A,T}) where {A,T} = X
 function Base.convert(::Type{I}, X::Alignment{A,J}) where {I<:Integer,A,J}
     return Alignment{A,I}(;

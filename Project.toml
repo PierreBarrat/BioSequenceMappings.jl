@@ -15,6 +15,10 @@ ArgCheck = "2.3.0"
 FASTX = "2.1"
 OneHotArrays = "0.2"
 ProgressMeter = "1.11.0"
+
+Random = "<0.0.1, 1"
+Test = "<0.0.1, 1"
+
 julia = "1.9"
 
 [extras]
