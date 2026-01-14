@@ -168,6 +168,12 @@ end
 ##################### Misc #####################
 ################################################
 
+function Base.:(==)(X::Alignment, Y::Alignment)
+    return all(propertynames(X)) do p
+        getproperty(X, p) == getproperty(Y, p)
+    end
+end
+
 function Base.show(io::IO, X::Alignment)
     L, M = size(X)
     print(io, "Alignment of M=$M sequences of length L=$L")

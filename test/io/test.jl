@@ -23,4 +23,19 @@ end
     B = read_fasta(joinpath(basedir, "aln.fasta"), alphabet = :nt)
     @test find_sequence(long_name, B) == (1, seq)
     @test find_sequence(short_name, B) == (2, reverse(seq))
+
+    @testset "safe reading" begin
+        # A normal amino acid alignment - the safe kwarg should not change anything
+        fasta_normal = joinpath(basedir, "toy_fasta_aa.fasta")
+        aln_1 = read_fasta(fasta_normal; safe=false)
+        aln_2 = @test_nowarn read_fasta(fasta_normal; safe=true)
+        @test aln_1 == aln_2
+
+        # An alignment wih the X symbol - the safe kwarg should trigger a warning
+        # note that if X appeared in the first sequences (default 5), the alphabet
+        # would be auto-determined using these sequences and would contain X
+        fasta_aa_X = joinpath(basedir, "toy_fasta_aa_X.fasta")
+        @test_throws ArgumentError read_fasta(fasta_aa_X)
+        @test_logs (:warn, r"Could not read")
+    end
 end

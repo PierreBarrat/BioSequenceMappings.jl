@@ -114,6 +114,6 @@ end
     @test_throws AssertionError Alignment(data; weights = [1/2, 1/4, 1/3], names = ["A"], verbose=false)
 
     data = Matrix{Int}([1 2 3; 2 3 22])
-    @test_throws ErrorException Alignment(data; verbose=false)
+    @test_throws ArgumentError Alignment(data; verbose=false)
     @test Alignment(data; alphabet=:none).alphabet == nothing
 end

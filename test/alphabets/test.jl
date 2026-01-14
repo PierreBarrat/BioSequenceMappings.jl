@@ -136,14 +136,14 @@ end
     @test Alphabet(:spin).characters == collect(BSM._DEFAULT_BINARY_ALPHABET_STRING)
     @test Alphabet(:binary).characters == collect(BSM._DEFAULT_BINARY_ALPHABET_STRING)
     @test typeof(Alphabet(:spin, Int8)) == Alphabet{Char, Int8}
-    @test_throws ErrorException Alphabet(:some_symbol)
+    @test_throws ArgumentError Alphabet(:some_symbol)
 
     @test default_alphabet(4).characters == collect(BSM._DEFAULT_NT_ALPHABET_STRING_NOGAP)
     @test default_alphabet(21).characters == collect(BSM._DEFAULT_AA_ALPHABET_STRING)
     @test default_alphabet(5).characters == collect(BSM._DEFAULT_NT_ALPHABET_STRING)
     @test default_alphabet(14).characters == collect(BSM._DEFAULT_AA_ALPHABET_STRING)
-    @test_throws ErrorException default_alphabet(22)
-    @test_throws ErrorException default_alphabet(1)
+    @test_throws ArgumentError default_alphabet(22)
+    @test_throws ArgumentError default_alphabet(1)
 end
 
 @testset "Sequence to int" begin
@@ -161,7 +161,7 @@ end
         X == [5,4,3,2] && typeof(X) == Vector{Int8}
     end
 
-    @test_throws ErrorException begin
+    @test_throws ArgumentError begin
         s = "-TGCAB"
         alphabet = Alphabet(:dna, Int8)
         alphabet(s)

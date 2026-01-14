@@ -238,7 +238,7 @@ function Alphabet(name::Symbol, ::Type{T}=Int) where T <: Integer
         names = convert(
             Vector{Any}, vcat(aa_alphabet_names, nt_alphabet_names, binary_alphabet_names)
         )
-        error("Unrecognized alphabet name $name - Possible names $names")
+        throw(ArgumentError("Unrecognized alphabet name $name - Possible names $names"))
     end
 end
 
@@ -262,7 +262,10 @@ function default_alphabet(q::Integer, ::Type{T}=Int) where T <: Integer
     elseif 5 < q <= 21
         Alphabet(:aa, T)
     else
-        error("No defined default alphabet for q = $q (<2 or > 21) - provide your own or use `nothing`")
+        throw(ArgumentError("""
+        No defined default alphabet for q = $q (<2 or > 21) - \
+        provide your own or use `nothing`
+        """))
     end
 end
 
@@ -274,7 +277,7 @@ end
 function (alphabet::Alphabet{A,T})(c::A) where {A,T}
     i = get(alphabet.char_to_index, c, alphabet.default_index)
     if isnothing(i)
-        error("Symbol $c not in alphabet, and no defaults set.")
+        throw(ArgumentError("Symbol $c not in alphabet, and no defaults set."))
     end
     return i
 end
