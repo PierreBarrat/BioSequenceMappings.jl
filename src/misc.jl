@@ -84,14 +84,14 @@ function pairwise_hamming(X::AbstractAlignment; as_vec=true, step=1, kwargs...)
     if as_vec
         H = zeros(Float64, n)
         n = 1
-        for i in 1:step:M, j in (i+1):step:M
+        @showprogress for i in 1:step:M, j in (i+1):step:M
             H[n] = hamming(X[i], X[j]; kwargs...)
             n += 1
         end
         return H
     else
         H = zeros(Float64, M, M)
-        for i in 1:step:M, j in (i+1):step:M
+        @showprogress for i in 1:step:M, j in (i+1):step:M
             H[j,i] = hamming(X[i], X[j]; kwargs...)
             H[i,j] = H[j,i]
         end
